@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uchala Dumbell Gym</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="images/logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+            <h2>UCHALA DUMBELL GYM</h2>
+        </div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#timings">Timings</a>
+            <a href="#features">Features</a>
+            <a href="#plans">Membership Plans</a>
+            <button type="button" onclick="openLoginModal()" class="btn-portal">Portal Login</button>
+        </div>
+    </nav>
+       
+    <!-- HERO SECTION -->
+    <section id="home" class="hero">
+        <div class="hero-box">
+            <span class="hero-tag">PURE STRENGTH & CONDITIONING</span>
+            <h1>FORGE YOUR PHYSIQUE AT <span>UCHALA GYM</span></h1>
+            <p>Uchala's premier heavy iron strength haven. Heavy dumbbells up to 50kg+, Olympic benches, squat racks, and certified coaches dedicated to your goals.</p>
+            <div class="hero-cta">
+                <a href="#plans" class="btn-primary">View Membership Plans</a>
+                <button type="button" onclick="openLoginModal()" class="btn-outline">Portal Sign In</button>
+            </div>
+        </div>
+    </section>
+       
+    <!-- TIMINGS -->
+    <section id="timings" class="section">
+        <h2>Gym Timings & Schedule</h2>
+        <p class="section-sub">Train around your schedule with our dual daily shifts.</p>
+        
+        <div class="grid-cards">
+            <div class="card">
+                <h3>Morning Shift</h3>
+                <p class="card-highlight">6:00 AM – 12:00 PM</p>
+                <span class="badge">Peak Strength & Cardio</span>
+            </div>
+
+            <div class="card">
+                <h3>Evening Shift</h3>
+                <p class="card-highlight">5:00 PM – 12:00 AM (Midnight)</p>
+                <span class="badge">Midnight Powerlifting</span>
+            </div>
+
+            <div class="card card-alert">
+                <h3 style="color: #e74c3c;">Sunday</h3>
+                <p class="card-highlight" style="color: #e74c3c;">Rest Day (Closed)</p>
+                <span class="badge badge-alert">Recovery & Maintenance</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="section section-darker">
+        <h2>Features & Facilities</h2>
+        <p class="section-sub">Engineered for serious lifters and daily athletes.</p>
+
+        <div class="grid-cards">
+            <div class="card">
+                <h3>Heavy Dumbbell & Free Weights</h3>
+                <p>Dumbbells from 2.5kg to 50kg+, Olympic benches, squat racks, and dedicated deadlift platforms.</p>
+            </div>
+
+            <div class="card">
+                <h3>Modern Cardio & Conditioning</h3>
+                <p>High-end treadmills, elliptical trainers, and cross-fit gear to boost your stamina and endurance.</p>
+            </div>
+
+            <div class="card">
+                <h3>Clean Locker & Changing Rooms</h3>
+                <p>Spacious, secure personal lockers and well-maintained amenities for your daily convenience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MEMBERSHIP PLANS -->
+    <section id="plans" class="section">
+        <h2>Membership Plans</h2>
+        <p class="section-sub">Transparent pricing with zero hidden admission fees.</p>
+
+        <div class="grid-cards">
+            <div class="card plan-card">
+                <h3>Starter Plan</h3>
+                <div class="plan-price">₹1,200 <span>/ 1 Month</span></div>
+                <ul class="plan-list">
+                    <li>Full access to Free Weights & Cardio Zone</li>
+                    <li>Free Locker & Shower facilities</li>
+                    <li>General floor trainer guidance</li>
+                </ul>
+                <button type="button" onclick="openLoginModal('member')" class="btn-card">Join at Reception</button>
+            </div>
+
+            <div class="card plan-card featured-plan">
+                <span class="plan-tag">POPULAR</span>
+                <h3>Pro Plan</h3>
+                <div class="plan-price">₹3,000 <span>/ 3 Months</span></div>
+                <ul class="plan-list">
+                    <li>Everything in Starter Plan</li>
+                    <li>Custom workout split routine</li>
+                    <li>Basic nutrition & protein guidance</li>
+                    <li>Free Uchala Gym Shaker Bottle</li>
+                </ul>
+                <button type="button" onclick="openLoginModal('member')" class="btn-primary" style="width: 100%;">Join at Reception</button>
+            </div>
+
+            <div class="card plan-card">
+                <h3>Elite Plan</h3>
+                <div class="plan-price">₹9,999 <span>/ 1 Year</span></div>
+                <ul class="plan-list">
+                    <li>Unlimited 365-day full gym access</li>
+                    <li>Personalized Diet & Supplement plan</li>
+                    <li>Monthly body progress tracking</li>
+                    <li>Official Gym T-Shirt + Shaker</li>
+                </ul>
+                <button type="button" onclick="openLoginModal('member')" class="btn-card">Join at Reception</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTALS -->
+    <section id="login" class="section section-darker">
+        <h2>Choose Your Portal</h2>
+        <p class="section-sub">Select your portal to access your dashboard and records.</p>
+        
+        <div class="grid-cards">
+            <div class="card portal-card" onclick="openLoginModal('owner')">
+                <h3>Owner Portal</h3>
+                <p>Manage members, trainers, plans, salaries & financials.</p>
+                <button type="button" class="btn-portal-card">Enter Owner Portal &rarr;</button>
+            </div>
+
+            <div class="card portal-card" onclick="openLoginModal('trainer')">
+                <h3>Trainer Portal</h3>
+                <p>Assign daily workouts, diet plans & track trainees.</p>
+                <button type="button" class="btn-portal-card">Enter Trainer Portal &rarr;</button>
+            </div>
+
+            <div class="card portal-card" onclick="openLoginModal('member')">
+                <h3>Member Portal</h3>
+                <p>View today's workout, diet sheet & check-in log.</p>
+                <button type="button" class="btn-portal-card">Enter Member Portal &rarr;</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <h3>UCHALA DUMBELL GYM</h3>
+        <p>Location: Uchala, Maharashtra</p>
+        <p>Contact: +91 98765 43210</p>
+        <p class="footer-copy">© 2026 Uchala Dumbell Gym. All rights reserved.</p>
+    </footer>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Gym Portal Sign In</h2>
+                <button type="button" onclick="closeLoginModal()" class="btn-close">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="customId">User ID</label>
+                    <input type="text" id="customId" placeholder="e.g. UDGOWNER-1001" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required />
+                </div>
+                <div id="loginError" class="login-error" style="display: none;"></div>
+                <button type="submit" id="loginSubmitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

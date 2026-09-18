@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Portal - Uchala Dumbell Gym</title>
+    <link rel="stylesheet" href="trainer.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>TRAINER PORTAL</h2>
+            <p id="trainerSpecializationText">Strength & Conditioning Coach</p>
+        </div>
+        
+        <nav class="sidebar-menu">
+            <button type="button" class="nav-tab active" onclick="switchSection('trainees')">My Trainees</button>
+            <button type="button" class="nav-tab" onclick="switchSection('workouts')">Workout Schedules</button>
+            <button type="button" class="nav-tab" onclick="switchSection('diets')">Diet & Nutrition</button>
+            <button type="button" class="nav-tab" onclick="switchSection('trainee-attendance')">Trainee Attendance</button>
+            <button type="button" class="nav-tab" onclick="switchSection('my-attendance')">My Attendance</button>
+            <button type="button" class="nav-tab" onclick="switchSection('salary-slips')">My Salary Slips</button>
+            <button type="button" class="nav-logout" onclick="logout()">Logout</button>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- TOP PROFILE BAR -->
+        <div class="top-bar">
+            <div>
+                <span class="badge-coach">COACH</span>
+                <strong id="trainerNameDisplay">Trainer Alex</strong>
+            </div>
+            <div>
+                <button type="button" onclick="openModal('changePasswordModal')" class="btn-sm">Change Password</button>
+            </div>
+        </div>
+
+        <!-- SECTION 1: MY TRAINEES -->
+        <section id="section-trainees" class="content-section">
+            <div class="page-title flex-between">
+                <div>
+                    <h1>My Assigned Trainees</h1>
+                    <p>Athletes currently assigned to your coaching roster</p>
+                </div>
+                <div>
+                    <button type="button" onclick="openModal('assignWorkoutModal')" class="btn-primary" style="margin-right: 8px;">+ Assign Daily Workout</button>
+                    <button type="button" onclick="openModal('setDietModal')" class="btn-primary">+ Set Diet Plan</button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gym ID</th>
+                            <th>Member Name</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="traineesTableBody">
+                        <tr><td colspan="5" style="text-align:center; color:#777;">Loading trainees...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WORKOUT SCHEDULES -->
+        <section id="section-workouts" class="content-section" style="display: none;">
+            <div class="page-title flex-between">
+                <div>
+                    <h1>Workout Schedules</h1>
+                    <p>Daily workout splits and routines assigned to your trainees</p>
+                </div>
+                <button type="button" onclick="openModal('assignWorkoutModal')" class="btn-primary">+ Assign Workout</button>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Trainee</th>
+                            <th>Workout Title</th>
+                            <th>Exercises (Sets x Reps)</th>
+                            <th>Trainer Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workoutsTableBody">
+                        <tr><td colspan="5" style="text-align:center; color:#777;">Loading workout routines...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DIET & NUTRITION -->
+        <section id="section-diets" class="content-section" style="display: none;">
+            <div class="page-title flex-between">
+                <div>
+                    <h1>Diet & Nutrition Plans</h1>
+                    <p>Customized meal structures and targets for your athletes</p>
+                </div>
+                <button type="button" onclick="openModal('setDietModal')" class="btn-primary">+ Set Diet Plan</button>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Trainee</th>
+                            <th>Diet Type</th>
+                            <th>Goal Target</th>
+                            <th>Meals Breakdown</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dietsTableBody">
+                        <tr><td colspan="4" style="text-align:center; color:#777;">Loading diet sheets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TRAINEE ATTENDANCE -->
+        <section id="section-trainee-attendance" class="content-section" style="display: none;">
+            <div class="page-title flex-between">
+                <div>
+                    <h1>Trainee Attendance</h1>
+                    <p>Track which of your athletes checked in today</p>
+                </div>
+                <div>
+                    <input type="date" id="traineeAttDate" class="date-input" onchange="loadTraineeAttendance()">
+                    <button type="button" onclick="openModal('markTraineeAttendanceModal')" class="btn-primary" style="margin-left: 8px;">+ Mark Check-In</button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gym ID</th>
+                            <th>Trainee Name</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="traineeAttendanceTableBody">
+                        <tr><td colspan="4" style="text-align:center; color:#777;">Loading attendance...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 5: MY ATTENDANCE -->
+        <section id="section-my-attendance" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>My Coach Attendance Log</h1>
+                <p>Your personal check-in history</p>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Check-in Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myAttendanceTableBody">
+                        <tr><td colspan="3" style="text-align:center; color:#777;">Loading your attendance history...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 6: MY SALARY SLIPS -->
+        <section id="section-salary-slips" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>My Salary Slips & Vouchers</h1>
+                <p>Monthly compensation records and payment vouchers</p>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Voucher #</th>
+                            <th>Month</th>
+                            <th>Base Salary</th>
+                            <th>Bonus</th>
+                            <th>Deductions</th>
+                            <th>Net Disbursed</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salarySlipsTableBody">
+                        <tr><td colspan="7" style="text-align:center; color:#777;">Loading salary slips...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MODAL 1: ASSIGN DAILY WORKOUT -->
+    <div id="assignWorkoutModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Assign Daily Workout</h3>
+                <span onclick="closeModal('assignWorkoutModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="assignWorkoutForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Select Trainee *</label>
+                        <select id="workoutTraineeSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Day of Week *</label>
+                        <select id="workoutDaySelect" required>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Workout Title *</label>
+                    <input type="text" id="workoutTitleInput" required placeholder="e.g. Chest & Triceps Hypertrophy">
+                </div>
+                <div class="form-group">
+                    <label>Exercise 1 (Name, Sets, Reps, Weight)</label>
+                    <div class="form-row">
+                        <input type="text" id="ex1Name" placeholder="e.g. Flat Bench Press" style="flex:2;">
+                        <input type="text" id="ex1Sets" placeholder="4 sets" style="flex:1;">
+                        <input type="text" id="ex1Reps" placeholder="10-12 reps" style="flex:1;">
+                        <input type="text" id="ex1Weight" placeholder="60kg" style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Exercise 2 (Name, Sets, Reps, Weight)</label>
+                    <div class="form-row">
+                        <input type="text" id="ex2Name" placeholder="e.g. Incline Dumbbell Press" style="flex:2;">
+                        <input type="text" id="ex2Sets" placeholder="3 sets" style="flex:1;">
+                        <input type="text" id="ex2Reps" placeholder="12 reps" style="flex:1;">
+                        <input type="text" id="ex2Weight" placeholder="22kg" style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Trainer Notes</label>
+                    <input type="text" id="workoutNotesInput" placeholder="e.g. Warm up rotator cuffs for 5 mins">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save & Assign Workout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SET TRAINEE DIET PLAN -->
+    <div id="setDietModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Set Trainee Diet Plan</h3>
+                <span onclick="closeModal('setDietModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="setDietForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Select Trainee *</label>
+                        <select id="dietTraineeSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Diet Type *</label>
+                        <select id="dietTypeSelect" required>
+                            <option value="Non-Vegetarian">Non-Vegetarian</option>
+                            <option value="Vegetarian">Vegetarian</option>
+                            <option value="Eggitarian">Eggitarian</option>
+                            <option value="Vegan">Vegan</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Goal Target *</label>
+                    <input type="text" id="dietGoalInput" required placeholder="e.g. Lean Bulking (2600 kcal)">
+                </div>
+                <div class="form-group">
+                    <label>Breakfast</label>
+                    <input type="text" id="dietBreakfastInput" placeholder="e.g. 4 Eggs / Paneer + 60g Oats + 1 Banana">
+                </div>
+                <div class="form-group">
+                    <label>Lunch</label>
+                    <input type="text" id="dietLunchInput" placeholder="e.g. 150g Chicken/Soya + Rice + Salad">
+                </div>
+                <div class="form-group">
+                    <label>Pre-Workout Snack</label>
+                    <input type="text" id="dietPreWorkoutInput" placeholder="e.g. 2 Peanut Butter Toast + Black Coffee">
+                </div>
+                <div class="form-group">
+                    <label>Dinner</label>
+                    <input type="text" id="dietDinnerInput" placeholder="e.g. 150g Fish / Dal + 2 Roti + Veggies">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Diet Plan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: MARK TRAINEE CHECK-IN -->
+    <div id="markTraineeAttendanceModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Mark Trainee Check-In</h3>
+                <span onclick="closeModal('markTraineeAttendanceModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="markTraineeAttendanceForm">
+                <div class="form-group">
+                    <label>Select Trainee *</label>
+                    <select id="attTraineeSelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="attStatusSelect">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Submit Check-In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CHANGE MY PASSWORD -->
+    <div id="changePasswordModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Change My Password</h3>
+                <span onclick="closeModal('changePasswordModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Current Password *</label>
+                    <input type="password" id="trainerOldPass" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>New Password (min 4 characters) *</label>
+                    <input type="password" id="trainerNewPass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="trainer.js"></script>
+</body>
+</html>
