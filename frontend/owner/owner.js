@@ -322,8 +322,8 @@ async function loadAttendance() {
                     <td>${a.user ? a.user.name : 'Athlete'}</td>
                     <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
                     <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
-                    <td><button onclick="deleteAttendanceRecord('${a._id}')" class="btn-action-delete">Delete</button></td>
-                    <td><button onclick="openEditAttendanceModal('${a._id}')"class="btn-action-edit">Edit</button></td>
+                    <td><button onclick="deleteAttendanceRecord('${a._id}')" class="btn-action-delete">Delete</button>
+                    <button onclick="openEditAttendanceModal('${a._id}')"class="btn-action-edit">Edit</button></td>
                 </tr>
             `).join('') : `<tr><td colspan="5" style="text-align:center; color:#777;">No member attendance recorded</td></tr>`;
         }
@@ -337,9 +337,8 @@ async function loadAttendance() {
                     <td><strong>${a.user ? (a.user.gymId || a.user.customId) : '-'}</strong></td>
                     <td>${a.user ? a.user.name : 'Coach'}</td>
                     <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
-                    <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
-                     <td>
-            <button onclick="openEditAttendanceModal('${a._id}', '${a.user ? a.user.name : ''}', '${a.status}')" class="btn-action-edit">Edit</button></td>
+                    <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span>
+                     <button onclick="openEditAttendanceModal('${a._id}', '${a.user ? a.user.name : ''}', '${a.status}')" class="btn-action-edit">Edit</button></td>
                 </tr>
             `).join('') : `<tr><td colspan="4" style="text-align:center; color:#777;">No trainer attendance recorded</td></tr>`;
         }
