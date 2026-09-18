@@ -65,6 +65,7 @@ const getMembers = async (req, res) => {
     const members = await User.find({ role: 'member' })
       .select('-password')
       .populate('assignedTrainer', 'name gymId phone specialization')
+      .populate('currentPlan', 'planName price durationInMonths')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, count: members.length, members });
@@ -148,7 +149,17 @@ const getTrainers = async (req, res) => {
       .select('-password')
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, count: trainers.length, trainers });
+    const trainersWithCount = await Promise.all(
+      trainers.map(async (t) => {
+        const traineesCount = await User.countDocuments({ assignedTrainer: t._id, role: 'member' });
+        return {
+          ...t.toObject(),
+          traineesCount
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, count: trainersWithCount.length, trainers: trainersWithCount });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

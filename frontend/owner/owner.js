@@ -121,7 +121,7 @@ async function loadAllData() {
                     <tr>
                         <td><span class="badge-active" style="font-family: monospace;">${m.gymId || m.customId || '-'}</span></td>
                         <td><strong>${m.name}</strong></td>
-                        <td>${m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : (m.plan || 'Starter Plan')}</td>
+                        <td>${m.currentPlan ? (m.currentPlan.planName || m.currentPlan.name) : (m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : '<span style="color: #718096;">No Plan Active</span>')}</td>
                         <td>${m.assignedTrainer ? m.assignedTrainer.name : '<span style="color: #718096;">Unassigned</span>'}</td>
                         <td><span class="${m.isActive !== false ? 'badge-active' : 'badge-due'}">${m.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span></td>
                     </tr>
@@ -169,7 +169,7 @@ function renderMembers() {
             <td><strong>${m.name}</strong></td>
             <td>${m.phone || '-'}</td>
             <td>${m.email || '-'}</td>
-            <td>${m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : (m.plan || 'Starter Plan')}</td>
+            <td>${m.currentPlan ? (m.currentPlan.planName || m.currentPlan.name) : (m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : '<span style="color: #718096;">No Plan Active</span>')}</td>
             <td>${m.assignedTrainer ? `<span class="badge-active">${m.assignedTrainer.name}</span>` : '<span style="color: #718096;">Unassigned</span>'}</td>
             <td><span class="${m.isActive !== false ? 'badge-active' : 'badge-due'}">${m.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span></td>
             <td>
@@ -195,7 +195,7 @@ function filterMembers() {
             <td><strong>${m.name}</strong></td>
             <td>${m.phone || '-'}</td>
             <td>${m.email || '-'}</td>
-            <td>${m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : (m.plan || 'Starter Plan')}</td>
+            <td>${m.currentPlan ? (m.currentPlan.planName || m.currentPlan.name) : (m.membershipPlan ? (m.membershipPlan.planName || m.membershipPlan.name) : '<span style="color: #718096;">No Plan Active</span>')}</td>
             <td>${m.assignedTrainer ? `<span class="badge-active">${m.assignedTrainer.name}</span>` : '<span style="color: #718096;">Unassigned</span>'}</td>
             <td><span class="${m.isActive !== false ? 'badge-active' : 'badge-due'}">${m.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span></td>
             <td>

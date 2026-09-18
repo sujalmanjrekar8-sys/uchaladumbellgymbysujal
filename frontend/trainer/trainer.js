@@ -94,10 +94,10 @@ async function loadTrainees() {
 
         tbody.innerHTML = myTrainees.map(m => `
             <tr>
-                <td><strong>${m.customId || m.memberId}</strong></td>
+                <td><strong>${m.gymId || m.customId || m.memberId || '-'}</strong></td>
                 <td>${m.name}</td>
                 <td>${m.phone || '-'}</td>
-                <td><span class="badge-active">${m.status || 'Active'}</span></td>
+                <td><span class="badge-active">${m.isActive !== false ? 'Active' : 'Inactive'}</span></td>
                 <td>
                     <button class="btn-action" onclick="quickAssignWorkout('${m._id}')">Assign Workout</button>
                     <button class="btn-action" onclick="quickSetDiet('${m._id}')">Set Diet</button>
@@ -183,7 +183,7 @@ async function loadTraineeAttendance() {
 
         tbody.innerHTML = list.map(a => `
             <tr>
-                <td><strong>${a.user ? a.user.customId : '-'}</strong></td>
+                <td><strong>${a.user ? (a.user.gymId || a.user.customId || '-') : '-'}</strong></td>
                 <td>${a.user ? a.user.name : '-'}</td>
                 <td>${a.inTime || 'Present'}</td>
                 <td><span class="badge-active">${a.status}</span></td>
@@ -241,7 +241,7 @@ async function loadSalarySlips() {
 // Helper: Populate trainee selects
 function populateTraineeDropdowns() {
     const options = myTrainees.map(m => 
-        `<option value="${m._id}">${m.name} (${m.customId || m.memberId})</option>`
+        `<option value="${m._id}">${m.name} (${m.gymId || m.customId || m.memberId})</option>`
     ).join("");
 
     ["workoutTraineeSelect", "dietTraineeSelect", "attTraineeSelect"].forEach(id => {

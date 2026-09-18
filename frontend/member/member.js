@@ -72,8 +72,8 @@ function logout() {
 // 1. Load Profile & Workout
 async function loadTodayWorkout() {
     document.getElementById("memberNameDisplay").textContent = currentUser.name || "Athlete";
-    document.getElementById("memberCustomId").textContent = currentUser.customId || currentUser.memberId || "UDGMEM-1001";
-    document.getElementById("memberIdBadge").textContent = currentUser.customId || currentUser.memberId || "UDGMEM-1001";
+    document.getElementById("memberCustomId").textContent = currentUser.gymId || currentUser.customId || currentUser.memberId || "UDGMEM-1001";
+    document.getElementById("memberIdBadge").textContent = currentUser.gymId || currentUser.customId || currentUser.memberId || "UDGMEM-1001";
     document.getElementById("memberWelcomeTitle").textContent = `Welcome Back, ${currentUser.name || 'Member'}!`;
 
     try {
