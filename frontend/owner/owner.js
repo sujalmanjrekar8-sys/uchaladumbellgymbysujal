@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "/api";
 
 // 1. API Helper (Matches Product 2 methods: get, post, put, delete)
 const api = {

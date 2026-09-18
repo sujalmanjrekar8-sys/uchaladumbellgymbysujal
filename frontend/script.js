@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "/api";
 
 function openLoginModal(suggestedRole = '') {
     const modal = document.getElementById("loginModal");
