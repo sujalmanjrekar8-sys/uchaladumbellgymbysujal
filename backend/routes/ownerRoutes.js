@@ -65,6 +65,7 @@ router.post('/attendance', markAttendance);
 router.get('/attendance/trainers', getTrainerAttendance);
 router.get('/attendance/members', getMemberAttendance);
 router.delete('/attendance/:id', deleteAttendance);
+router.put('/attendance/:id',updateAttendance);
 
 // Mappings
 router.post('/assign-trainer', assignTrainerToMember);
@@ -86,5 +87,7 @@ router.get('/diets', getAllDiets);
 
 // Admin Password Reset
 router.put('/users/:id/reset-password', resetUserPassword);
+
+
 
 module.exports = router;

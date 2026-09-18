@@ -319,6 +319,26 @@ const markAttendance = async (req, res) => {
   }
 };
 
+const updateAttendance = async (req, res) => {
+  try {
+    const { status, date, notes } = req.body;
+    const attendance = await Attendance.findById(req.params.id);
+
+    if (!attendance) {
+      return res.status(404).json({ success: false, message: 'Attendance record not found.' });
+    }
+
+    if (status) attendance.status = status;
+    if (date) attendance.date = new Date(date);
+    if (notes !== undefined) attendance.notes = notes;
+
+    await attendance.save();
+    res.status(200).json({ success: true, message: 'Attendance updated successfully.', attendance });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getTrainerAttendance = async (req, res) => {
   try {
     const attendance = await Attendance.find({ userRole: 'trainer' })
@@ -634,6 +654,7 @@ module.exports = {
   markAttendance,
   getTrainerAttendance,
   getMemberAttendance,
+  updateAttendance,
   deleteAttendance,
   assignTrainerToMember,
   getTraineesMapping,

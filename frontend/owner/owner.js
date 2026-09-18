@@ -323,6 +323,7 @@ async function loadAttendance() {
                     <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
                     <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
                     <td><button onclick="deleteAttendanceRecord('${a._id}')" class="btn-action-delete">Delete</button></td>
+                    <td><button onclick="openEditAttendanceModal('${a._id}')"class="btn-action-edit">Edit</button></td>
                 </tr>
             `).join('') : `<tr><td colspan="5" style="text-align:center; color:#777;">No member attendance recorded</td></tr>`;
         }
@@ -337,6 +338,8 @@ async function loadAttendance() {
                     <td>${a.user ? a.user.name : 'Coach'}</td>
                     <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
                     <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
+                     <td>
+            <button onclick="openEditAttendanceModal('${a._id}', '${a.user ? a.user.name : ''}', '${a.status}')" class="btn-action-edit">Edit</button></td>
                 </tr>
             `).join('') : `<tr><td colspan="4" style="text-align:center; color:#777;">No trainer attendance recorded</td></tr>`;
         }
@@ -752,4 +755,28 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
 // Initial Launch
 document.addEventListener('DOMContentLoaded', () => {
     loadAllData();
+});
+
+// Open Edit Modal
+function openEditAttendanceModal(id, name, status) {
+    document.getElementById('editAttId').value = id;
+    document.getElementById('editAttPersonName').value = name || 'User';
+    document.getElementById('editAttStatus').value = status || 'Present';
+    openModal('editAttendanceModal');
+}
+
+// Handle Edit Form Submit
+document.getElementById('editAttendanceForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const id = document.getElementById('editAttId').value;
+    const status = document.getElementById('editAttStatus').value;
+
+    try {
+        const res = await api.put(`/owner/attendance/${id}`, { status });
+        alert(res.message || 'Attendance record updated!');
+        closeModal('editAttendanceModal');
+        loadAttendance();
+    } catch (err) {
+        alert(err.message || 'Failed to update attendance');
+    }
 });

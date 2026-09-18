@@ -796,6 +796,34 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT ATTENDANCE -->
+<div id="editAttendanceModal" class="modal-bg" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Edit Attendance Record</h3>
+      <span onclick="closeModal('editAttendanceModal')" class="close-btn">&times;</span>
+    </div>
+    <form id="editAttendanceForm">
+      <input type="hidden" id="editAttId">
+      
+      <div class="form-group">
+        <label for="editAttPersonName">Person</label>
+        <input type="text" id="editAttPersonName" class="form-input" disabled>
+      </div>
+
+      <div class="form-group">
+        <label for="editAttStatus">Status</label>
+        <select id="editAttStatus" class="form-select">
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-primary btn-block">Save Changes</button>
+    </form>
+  </div>
+</div>
+
     <script src="owner.js"></script>
 </body>
 </html>
