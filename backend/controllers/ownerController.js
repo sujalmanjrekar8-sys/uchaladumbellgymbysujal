@@ -636,6 +636,62 @@ const payDuePayment = async (req, res) => {
   }
 };
 
+const updatePayment = async (req, res) => {
+  try {
+    const { paidAmount, dueAmount, totalAmount, paymentMode, paymentDate, notes } = req.body;
+    const payment = await Payment.findById(req.params.id);
+    if (!payment) return res.status(404).json({ success: false, message: 'Payment record not found' });
+
+    if (paidAmount !== undefined) payment.paidAmount = Number(paidAmount);
+    if (dueAmount !== undefined) payment.dueAmount = Number(dueAmount);
+    if (totalAmount !== undefined) payment.totalAmount = Number(totalAmount);
+    if (paymentMode) payment.paymentMode = paymentMode;
+    if (paymentDate) payment.paymentDate = new Date(paymentDate);
+    if (notes !== undefined) payment.notes = notes;
+
+    payment.status = payment.dueAmount <= 0 ? 'Paid' : (payment.paidAmount > 0 ? 'Partial' : 'Pending');
+    await payment.save();
+
+    res.status(200).json({ success: true, message: 'Payment details updated successfully', payment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const updateSalary = async (req, res) => {
+  try {
+    const { month, baseSalary, bonuses, deductions, paymentMode, status, notes, paymentDate } = req.body;
+    const salary = await Salary.findById(req.params.id);
+    if (!salary) return res.status(404).json({ success: false, message: 'Salary slip not found' });
+
+    if (month) salary.month = month;
+    if (baseSalary !== undefined) salary.baseSalary = Number(baseSalary);
+    if (bonuses !== undefined) salary.bonuses = Number(bonuses);
+    if (deductions !== undefined) salary.deductions = Number(deductions);
+    if (paymentMode) salary.paymentMode = paymentMode;
+    if (status) salary.status = status;
+    if (notes !== undefined) salary.notes = notes;
+    if (paymentDate) salary.paymentDate = new Date(paymentDate);
+
+    salary.netSalary = (salary.baseSalary || 0) + (salary.bonuses || 0) - (salary.deductions || 0);
+    await salary.save();
+
+    res.status(200).json({ success: true, message: 'Salary slip updated successfully', salary });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteSalary = async (req, res) => {
+  try {
+    const salary = await Salary.findByIdAndDelete(req.params.id);
+    if (!salary) return res.status(404).json({ success: false, message: 'Salary slip not found' });
+    res.status(200).json({ success: true, message: 'Salary record deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getMembers,
@@ -660,10 +716,13 @@ module.exports = {
   getTraineesMapping,
   recordPayment,
   getPayments,
+  updatePayment,
   payDuePayment,
   deletePayment,
   createSalarySlip,
   getSalaries,
+  updateSalary,
+  deleteSalary,
   getAllWorkouts,
   getAllDiets,
   resetUserPassword

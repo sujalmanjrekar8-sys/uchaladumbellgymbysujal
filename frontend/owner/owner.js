@@ -360,14 +360,16 @@ async function deleteAttendanceRecord(id) {
 }
 
 // Payments
+let globalPayments = [];
+
 async function loadPayments() {
     try {
         const res = await api.get('/owner/payments');
-        const list = res.payments || res.data || [];
+        globalPayments = res.payments || res.data || [];
         const tbody = document.getElementById('paymentsTableBody');
 
         if (!tbody) return;
-        tbody.innerHTML = list.length > 0 ? list.map(p => `
+        tbody.innerHTML = globalPayments.length > 0 ? globalPayments.map(p => `
             <tr>
                 <td><strong style="color:#f39c12; font-family: monospace;">${p.invoiceNumber || p.invoiceNo || '-'}</strong></td>
                 <td>${p.member ? p.member.name : 'Athlete'}</td>
@@ -375,15 +377,38 @@ async function loadPayments() {
                 <td><strong style="color:#2ecc71;">₹${(p.paidAmount || p.amountPaid || 0).toLocaleString('en-IN')}</strong></td>
                 <td><strong style="color:${p.dueAmount > 0 ? '#e74c3c' : '#718096'};">₹${(p.dueAmount || 0).toLocaleString('en-IN')}</strong></td>
                 <td>${new Date(p.paymentDate || p.createdAt).toLocaleDateString()}</td>
+                <td><span style="font-size:12px; color:#a0aec0;">${p.paymentMode || 'Cash'}</span></td>
+                <td><span class="${p.dueAmount <= 0 ? 'badge-active' : 'badge-due'}">${p.status || (p.dueAmount <= 0 ? 'Paid' : 'Pending')}</span></td>
                 <td>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                        ${p.dueAmount > 0 ? `<button onclick="openPayDueModal('${p._id}', '${p.invoiceNumber || p.invoiceNo}', ${p.dueAmount})" class="btn-sm" style="background:#2ecc71; color:#000; font-weight:bold;">Collect Due</button>` : `<span class="badge-active">Paid</span>`}
+                    <div style="display:flex; gap:4px; align-items:center;">
+                        ${p.dueAmount > 0 ? `<button onclick="openPayDueModal('${p._id}', '${p.invoiceNumber || p.invoiceNo}', ${p.dueAmount})" class="btn-sm" style="background:#2ecc71; color:#000; font-weight:bold;">Pay Due</button>` : ''}
+                        <button onclick="openEditPaymentModal('${p._id}')" class="btn-action-edit">Edit</button>
                         <button onclick="deletePaymentRecord('${p._id}', '${p.invoiceNumber || p.invoiceNo}')" class="btn-action-delete">Delete</button>
                     </div>
                 </td>
             </tr>
-        `).join('') : `<tr><td colspan="7" style="text-align:center; color:#777;">No customer payments yet</td></tr>`;
+        `).join('') : `<tr><td colspan="9" style="text-align:center; color:#777;">No customer payments yet</td></tr>`;
     } catch (err) {}
+}
+
+function openEditPaymentModal(id) {
+    const pay = globalPayments.find(p => p._id === id);
+    if (!pay) return;
+    document.getElementById('editPaymentId').value = pay._id;
+    document.getElementById('editPayInvoiceNo').value = pay.invoiceNumber || pay.invoiceNo || '-';
+    document.getElementById('editPayTotalAmount').value = pay.totalAmount || ((pay.paidAmount || 0) + (pay.dueAmount || 0));
+    document.getElementById('editPayPaidAmount').value = pay.paidAmount || 0;
+    document.getElementById('editPayDueAmount').value = pay.dueAmount || 0;
+    document.getElementById('editPayMode').value = pay.paymentMode || 'Cash';
+    document.getElementById('editPayDate').value = pay.paymentDate ? new Date(pay.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    document.getElementById('editPayNotes').value = pay.notes || '';
+    openModal('editPaymentModal');
+}
+
+function recalcEditPayDue() {
+    const total = Number(document.getElementById('editPayTotalAmount').value) || 0;
+    const paid = Number(document.getElementById('editPayPaidAmount').value) || 0;
+    document.getElementById('editPayDueAmount').value = Math.max(0, total - paid);
 }
 
 async function deletePaymentRecord(id, inv) {
@@ -404,25 +429,66 @@ function openPayDueModal(id, invoiceNumber, dueAmount) {
 }
 
 // Salaries
+let globalSalaries = [];
+
 async function loadSalaries() {
     try {
         const res = await api.get('/owner/salaries');
-        const list = res.salaries || res.data || [];
+        globalSalaries = res.salaries || res.data || [];
         const tbody = document.getElementById('salariesTableBody');
 
         if (!tbody) return;
-        tbody.innerHTML = list.length > 0 ? list.map(s => `
+        tbody.innerHTML = globalSalaries.length > 0 ? globalSalaries.map(s => `
             <tr>
                 <td><strong style="color:#60a5fa; font-family: monospace;">${s.receiptNumber || s.voucherNo || '-'}</strong></td>
                 <td><strong>${s.trainer ? s.trainer.name : 'Coach'}</strong></td>
                 <td>${s.month}</td>
                 <td>₹${(s.baseSalary || 0).toLocaleString('en-IN')}</td>
                 <td>+₹${s.bonuses || s.bonus || 0}</td>
+                <td>-₹${s.deductions || 0}</td>
                 <td><strong style="color:#2ecc71;">₹${(s.netSalary || ((s.baseSalary + (s.bonuses || 0)) - (s.deductions || 0))).toLocaleString('en-IN')}</strong></td>
-                <td>${new Date(s.createdAt || Date.now()).toLocaleDateString()}</td>
+                <td>${new Date(s.paymentDate || s.createdAt || Date.now()).toLocaleDateString()}</td>
+                <td>
+                    <div style="display:flex; gap:4px; align-items:center;">
+                        <button onclick="openEditSalaryModal('${s._id}')" class="btn-action-edit">Edit</button>
+                        <button onclick="deleteSalarySlip('${s._id}', '${s.receiptNumber || s.voucherNo}')" class="btn-action-delete">Delete</button>
+                    </div>
+                </td>
             </tr>
-        `).join('') : `<tr><td colspan="7" style="text-align:center; color:#777;">No salary vouchers issued yet</td></tr>`;
+        `).join('') : `<tr><td colspan="9" style="text-align:center; color:#777;">No salary vouchers issued yet</td></tr>`;
     } catch (err) {}
+}
+
+function openEditSalaryModal(id) {
+    const sal = globalSalaries.find(s => s._id === id);
+    if (!sal) return;
+    document.getElementById('editSalaryId').value = sal._id;
+    document.getElementById('editSalVoucherNo').value = sal.receiptNumber || sal.voucherNo || '-';
+    document.getElementById('editSalMonth').value = sal.month || '';
+    document.getElementById('editSalBase').value = sal.baseSalary || 0;
+    document.getElementById('editSalBonus').value = sal.bonuses || 0;
+    document.getElementById('editSalDeduct').value = sal.deductions || 0;
+    document.getElementById('editSalNet').value = sal.netSalary || ((sal.baseSalary || 0) + (sal.bonuses || 0) - (sal.deductions || 0));
+    document.getElementById('editSalMode').value = sal.paymentMode || 'Bank Transfer';
+    document.getElementById('editSalStatus').value = sal.status || 'Paid';
+    document.getElementById('editSalDate').value = sal.paymentDate ? new Date(sal.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    openModal('editSalaryModal');
+}
+
+function recalcEditSalaryNet() {
+    const base = Number(document.getElementById('editSalBase').value) || 0;
+    const bonus = Number(document.getElementById('editSalBonus').value) || 0;
+    const deduct = Number(document.getElementById('editSalDeduct').value) || 0;
+    document.getElementById('editSalNet').value = Math.max(0, base + bonus - deduct);
+}
+
+async function deleteSalarySlip(id, vch) {
+    if (!confirm(`Delete salary voucher ${vch}?`)) return;
+    try {
+        const res = await api.delete(`/owner/salaries/${id}`);
+        alert(res.message || 'Salary record deleted');
+        loadSalaries();
+    } catch (err) { alert(err.message); }
 }
 
 // Workouts & Diets Overview
@@ -433,17 +499,30 @@ async function loadWorkouts() {
         const tbody = document.getElementById('allWorkoutsTableBody');
 
         if (!tbody) return;
-        tbody.innerHTML = list.length > 0 ? list.map(w => `
-            <tr>
-                <td>${w.date || w.day || '-'}</td>
-                <td><strong>${w.member ? w.member.name : (w.athleteName || '-')}</strong></td>
-                <td>${w.trainer ? w.trainer.name : 'Floor Coach'}</td>
-                <td>${w.workoutTitle || w.category || 'General'}</td>
-                <td>${w.exercise || (w.exercises ? w.exercises.map(e => e.name).join(', ') : '-')}</td>
-                <td>${w.setsReps || (w.exercises ? `${w.exercises.length} exercises` : '-')}</td>
-                <td>${w.weight ? `${w.weight} kg` : '-'}</td>
-            </tr>
-        `).join('') : `<tr><td colspan="7" style="text-align:center; color:#777;">No workout splits logged</td></tr>`;
+        tbody.innerHTML = list.length > 0 ? list.map(w => {
+            let exText = '-';
+            if (w.exercises && Array.isArray(w.exercises) && w.exercises.length > 0) {
+                exText = w.exercises.map(e => `${e.name} (${e.sets}x${e.reps}${e.weight ? ` @ ${e.weight}` : ''})`).join('<br>');
+            } else if (w.exercise) {
+                exText = `${w.exercise} (${w.setsReps || '4x10'})`;
+            }
+
+            return `
+                <tr>
+                    <td><strong>${w.day || w.date || w.dayOfWeek || 'Daily'}</strong></td>
+                    <td><strong>${w.member ? w.member.name : (w.athleteName || '-')}</strong></td>
+                    <td>${w.trainer ? w.trainer.name : 'Floor Coach'}</td>
+                    <td><strong style="color:#f39c12;">${w.workoutTitle || w.title || w.category || 'General Workout'}</strong></td>
+                    <td style="font-size:12px; line-height:1.5;">${exText}</td>
+                    <td style="color:#a0aec0; font-size:12px;">${w.notes || '-'}</td>
+                    <td>
+                        <span class="${w.isCompleted ? 'badge-active' : 'badge-due'}">
+                            ${w.isCompleted ? 'Completed ✅' : 'Pending ⏳'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('') : `<tr><td colspan="7" style="text-align:center; color:#777;">No workout splits logged</td></tr>`;
     } catch (err) {}
 }
 
@@ -454,16 +533,29 @@ async function loadDiets() {
         const tbody = document.getElementById('allDietsTableBody');
 
         if (!tbody) return;
-        tbody.innerHTML = list.length > 0 ? list.map(d => `
-            <tr>
-                <td><strong>${d.member ? d.member.name : '-'}</strong></td>
-                <td>${d.trainer ? d.trainer.name : 'Coach'}</td>
-                <td>${d.goal || d.title || d.dailyGoal || 'Nutrition Plan'}</td>
-                <td>${d.calories ? `${d.calories} kcal` : '-'}</td>
-                <td>${d.protein ? `${d.protein}g` : '-'}</td>
-                <td style="font-size:12px; color:#a0aec0;">${d.meals ? `${d.meals.length} meals/day` : (d.instructions || d.breakfast || '-')}</td>
-            </tr>
-        `).join('') : `<tr><td colspan="6" style="text-align:center; color:#777;">No diet sheets logged</td></tr>`;
+        tbody.innerHTML = list.length > 0 ? list.map(d => {
+            let mealsHtml = '-';
+            if (d.meals && Array.isArray(d.meals) && d.meals.length > 0) {
+                mealsHtml = d.meals.map(m => `<strong>${m.mealTime || 'Meal'}:</strong> ${m.items}${m.calories ? ` <span style="color:#a0aec0;">(${m.calories} kcal)</span>` : ''}`).join('<br>');
+            } else {
+                const parts = [];
+                if (d.breakfast) parts.push(`<strong>Breakfast:</strong> ${d.breakfast}`);
+                if (d.lunch) parts.push(`<strong>Lunch:</strong> ${d.lunch}`);
+                if (d.preWorkout) parts.push(`<strong>Pre-Workout:</strong> ${d.preWorkout}`);
+                if (d.dinner) parts.push(`<strong>Dinner:</strong> ${d.dinner}`);
+                mealsHtml = parts.length > 0 ? parts.join('<br>') : (d.instructions || d.notes || '-');
+            }
+
+            return `
+                <tr>
+                    <td><strong>${d.member ? d.member.name : '-'}</strong></td>
+                    <td>${d.trainer ? d.trainer.name : 'Coach'}</td>
+                    <td><span class="badge-active" style="${d.dietType === 'Vegetarian' ? 'background:rgba(46,204,113,0.15); color:#2ecc71;' : 'background:rgba(243,156,18,0.15); color:#f39c12;'}">${d.dietType || 'Non-Vegetarian'}</span></td>
+                    <td><strong style="color:#f39c12;">${d.dailyGoal || d.goal || d.title || 'General Fitness'}</strong></td>
+                    <td style="font-size:12px; line-height:1.6; color:#cbd5e1;">${mealsHtml}</td>
+                </tr>
+            `;
+        }).join('') : `<tr><td colspan="5" style="text-align:center; color:#777;">No diet sheets logged</td></tr>`;
     } catch (err) {}
 }
 
@@ -756,6 +848,71 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
     } catch (err) { alert(err.message); }
 });
  
+// Edit Payment Form Submit
+const editPaymentFormEl = document.getElementById('editPaymentForm');
+if (editPaymentFormEl) {
+    editPaymentFormEl.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const id = document.getElementById('editPaymentId').value;
+        const totalAmount = Number(document.getElementById('editPayTotalAmount').value);
+        const paidAmount = Number(document.getElementById('editPayPaidAmount').value);
+        const dueAmount = Number(document.getElementById('editPayDueAmount').value);
+        const paymentMode = document.getElementById('editPayMode').value;
+        const paymentDate = document.getElementById('editPayDate').value;
+        const notes = document.getElementById('editPayNotes').value;
+
+        try {
+            const res = await api.put(`/owner/payments/${id}`, {
+                totalAmount,
+                paidAmount,
+                dueAmount,
+                paymentMode,
+                paymentDate,
+                notes
+            });
+            alert(res.message || 'Payment record updated successfully!');
+            closeModal('editPaymentModal');
+            loadPayments();
+            loadStats();
+        } catch (err) {
+            alert(err.message || 'Failed to update payment');
+        }
+    });
+}
+
+// Edit Salary Form Submit
+const editSalaryFormEl = document.getElementById('editSalaryForm');
+if (editSalaryFormEl) {
+    editSalaryFormEl.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const id = document.getElementById('editSalaryId').value;
+        const month = document.getElementById('editSalMonth').value;
+        const baseSalary = Number(document.getElementById('editSalBase').value);
+        const bonuses = Number(document.getElementById('editSalBonus').value);
+        const deductions = Number(document.getElementById('editSalDeduct').value);
+        const paymentMode = document.getElementById('editSalMode').value;
+        const status = document.getElementById('editSalStatus').value;
+        const paymentDate = document.getElementById('editSalDate').value;
+
+        try {
+            const res = await api.put(`/owner/salaries/${id}`, {
+                month,
+                baseSalary,
+                bonuses,
+                deductions,
+                paymentMode,
+                status,
+                paymentDate
+            });
+            alert(res.message || 'Salary voucher updated successfully!');
+            closeModal('editSalaryModal');
+            loadSalaries();
+        } catch (err) {
+            alert(err.message || 'Failed to update salary voucher');
+        }
+    });
+}
+
 // Initial Launch
 document.addEventListener('DOMContentLoaded', () => {
     loadAllData();

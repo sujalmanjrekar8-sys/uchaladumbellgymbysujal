@@ -25,10 +25,13 @@ const {
   getTraineesMapping,
   recordPayment,
   getPayments,
+  updatePayment,
   payDuePayment,
   deletePayment,
   createSalarySlip,
   getSalaries,
+  updateSalary,
+  deleteSalary,
   getAllWorkouts,
   getAllDiets,
   resetUserPassword
@@ -66,7 +69,7 @@ router.post('/attendance', markAttendance);
 router.get('/attendance/trainers', getTrainerAttendance);
 router.get('/attendance/members', getMemberAttendance);
 router.delete('/attendance/:id', deleteAttendance);
-router.put('/attendance/:id',updateAttendance);
+router.put('/attendance/:id', updateAttendance);
 
 // Mappings
 router.post('/assign-trainer', assignTrainerToMember);
@@ -75,12 +78,15 @@ router.get('/trainees-mapping', getTraineesMapping);
 // Payments & Invoices
 router.get('/payments', getPayments);
 router.post('/payments', recordPayment);
+router.put('/payments/:id', updatePayment);
 router.put('/payments/:id/pay-due', payDuePayment);
 router.delete('/payments/:id', deletePayment);
 
 // Salaries
 router.get('/salaries', getSalaries);
 router.post('/salaries', createSalarySlip);
+router.put('/salaries/:id', updateSalary);
+router.delete('/salaries/:id', deleteSalary);
 
 // Workouts & Diets Overview
 router.get('/workouts', getAllWorkouts);
