@@ -17,6 +17,7 @@ const {
   deletePlan,
   assignPlanToMember,
   markAttendance,
+  updateAttendance,
   getTrainerAttendance,
   getMemberAttendance,
   deleteAttendance,
