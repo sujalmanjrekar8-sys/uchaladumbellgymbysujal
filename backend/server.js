@@ -84,8 +84,8 @@ app.listen(PORT, () => {
   console.log(`🚀 UCHALA DUMBELL GYM SERVER ACTIVE ON PORT ${PORT}`);
   console.log(`🌐 Public Website:   http://localhost:${PORT}/index.html`);
   console.log(`🔐 Login Gateway:    http://localhost:${PORT}/login.html`);
-  console.log(`👑 Owner Portal:     http://localhost:${PORT}/owner/dashboard.html`);
-  console.log(`🏋️ Trainer Portal:   http://localhost:${PORT}/trainer/dashboard.html`);
-  console.log(`🏃 Member Portal:    http://localhost:${PORT}/member/dashboard.html`);
+  console.log(`👑 Owner Portal:     http://localhost:${PORT}/owner/owner-dashboard.html`);
+  console.log(`🏋️ Trainer Portal:   http://localhost:${PORT}/trainer/trainer-dashboard.html`);
+  console.log(`🏃 Member Portal:    http://localhost:${PORT}/member/member-dashboard.html`);
   console.log(`=======================================================`);
 });
