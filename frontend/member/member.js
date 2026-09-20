@@ -133,14 +133,33 @@ async function loadTodayWorkout() {
 // 2. Load Diet Plan
 async function loadMyDiet() {
     try {
-        const diet = await fetchAuth("/member/diet");
+        const res = await fetchAuth("/member/diet");
+        const diet = (res && res.diet) ? res.diet : res;
         
-        if (diet && (diet.goal || diet.title)) {
-            document.getElementById("dietGoalSubtitle").textContent = `Goal Target: ${diet.goal || diet.title} (${diet.dietType || 'Custom Plan'})`;
-            document.getElementById("dietBreakfastText").textContent = diet.breakfast || diet.instructions || 'Eggs / Oats / Shaker';
-            document.getElementById("dietLunchText").textContent = diet.lunch || 'Whole food lean protein + carbs + vegetables';
-            document.getElementById("dietPreWorkoutText").textContent = diet.preWorkout || 'Banana / Peanut butter toast + Caffeine';
-            document.getElementById("dietDinnerText").textContent = diet.dinner || 'Light protein + fiber + vegetables';
+        if (diet && (diet.dailyGoal || diet.goal || diet.title || (diet.meals && diet.meals.length > 0))) {
+            document.getElementById("dietGoalSubtitle").textContent = `Goal Target: ${diet.dailyGoal || diet.goal || diet.title || 'Personalized Nutrition'} (${diet.dietType || 'Custom Plan'})`;
+            
+            let bText = diet.breakfast;
+            let lText = diet.lunch;
+            let pText = diet.preWorkout;
+            let dText = diet.dinner;
+
+            if (diet.meals && Array.isArray(diet.meals)) {
+                const bMeal = diet.meals.find(m => m.mealTime === 'Breakfast');
+                const lMeal = diet.meals.find(m => m.mealTime === 'Lunch');
+                const pMeal = diet.meals.find(m => m.mealTime === 'Pre-Workout' || m.mealTime === 'Morning Snack');
+                const dMeal = diet.meals.find(m => m.mealTime === 'Dinner' || m.mealTime === 'Post-Workout');
+
+                if (bMeal) bText = bMeal.items + (bMeal.calories ? ` (${bMeal.calories} kcal)` : '');
+                if (lMeal) lText = lMeal.items + (lMeal.calories ? ` (${lMeal.calories} kcal)` : '');
+                if (pMeal) pText = pMeal.items + (pMeal.calories ? ` (${pMeal.calories} kcal)` : '');
+                if (dMeal) dText = dMeal.items + (dMeal.calories ? ` (${dMeal.calories} kcal)` : '');
+            }
+
+            document.getElementById("dietBreakfastText").textContent = bText || diet.instructions || 'Eggs / Oats / Shaker';
+            document.getElementById("dietLunchText").textContent = lText || 'Whole food lean protein + carbs + vegetables';
+            document.getElementById("dietPreWorkoutText").textContent = pText || 'Banana / Peanut butter toast + Caffeine';
+            document.getElementById("dietDinnerText").textContent = dText || 'Light protein + fiber + vegetables';
         } else {
             document.getElementById("dietGoalSubtitle").textContent = "Standard Gym Nutrition";
             document.getElementById("dietBreakfastText").textContent = "4 Eggs / 100g Paneer + 50g Oats + 1 Banana";

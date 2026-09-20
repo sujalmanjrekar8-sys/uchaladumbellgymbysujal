@@ -149,20 +149,30 @@ async function loadDiets() {
             return;
         }
 
-        tbody.innerHTML = allDiets.map(d => `
-            <tr>
-                <td><strong>${d.member ? d.member.name : '-'}</strong></td>
-                <td>${d.dietType || 'Non-Vegetarian'}</td>
-                <td><strong style="color:#f39c12;">${d.goal || d.title || 'General Fitness'}</strong></td>
-                <td style="font-size:12px; line-height:1.6; color:#cbd5e1;">
-                    ${d.breakfast ? `<strong>Breakfast:</strong> ${d.breakfast}<br>` : ''}
-                    ${d.lunch ? `<strong>Lunch:</strong> ${d.lunch}<br>` : ''}
-                    ${d.preWorkout ? `<strong>Pre-Workout:</strong> ${d.preWorkout}<br>` : ''}
-                    ${d.dinner ? `<strong>Dinner:</strong> ${d.dinner}` : ''}
-                    ${!d.breakfast && (d.instructions || d.meals) ? d.instructions || d.meals : ''}
-                </td>
-            </tr>
-        `).join("");
+        tbody.innerHTML = allDiets.map(d => {
+            let mealsHtml = '-';
+            if (d.meals && Array.isArray(d.meals) && d.meals.length > 0) {
+                mealsHtml = d.meals.map(m => `<strong>${m.mealTime || 'Meal'}:</strong> ${m.items}${m.calories ? ` <span style="color:#a0aec0;">(${m.calories} kcal)</span>` : ''}`).join('<br>');
+            } else {
+                const parts = [];
+                if (d.breakfast) parts.push(`<strong>Breakfast:</strong> ${d.breakfast}`);
+                if (d.lunch) parts.push(`<strong>Lunch:</strong> ${d.lunch}`);
+                if (d.preWorkout) parts.push(`<strong>Pre-Workout:</strong> ${d.preWorkout}`);
+                if (d.dinner) parts.push(`<strong>Dinner:</strong> ${d.dinner}`);
+                mealsHtml = parts.length > 0 ? parts.join('<br>') : (d.instructions || d.notes || '-');
+            }
+
+            return `
+                <tr>
+                    <td><strong>${d.member ? d.member.name : '-'}</strong></td>
+                    <td><span class="badge-role" style="background:#2ecc71; color:#000;">${d.dietType || 'Non-Vegetarian'}</span></td>
+                    <td><strong style="color:#f39c12;">${d.dailyGoal || d.goal || d.title || 'General Fitness'}</strong></td>
+                    <td style="font-size:12px; line-height:1.6; color:#cbd5e1;">
+                        ${mealsHtml}
+                    </td>
+                </tr>
+            `;
+        }).join("");
     } catch (err) {}
 }
 
