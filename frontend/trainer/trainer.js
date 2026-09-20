@@ -328,17 +328,32 @@ async function loadSalarySlips() {
             return;
         }
 
-        tbody.innerHTML = slips.map(s => `
-            <tr>
-                <td><strong>${s.voucherNo || s._id.slice(-6).toUpperCase()}</strong></td>
-                <td>${s.month}</td>
-                <td>₹${(s.baseSalary || 0).toLocaleString()}</td>
-                <td>+₹${(s.bonus || 0).toLocaleString()}</td>
-                <td>-₹${(s.deductions || 0).toLocaleString()}</td>
-                <td><strong style="color:#2ecc71;">₹${((s.baseSalary || 0) + (s.bonus || 0) - (s.deductions || 0)).toLocaleString()}</strong></td>
-                <td>${new Date(s.createdAt || s.paymentDate || Date.now()).toLocaleDateString()}</td>
-            </tr>
-        `).join("");
+        tbody.innerHTML = slips.map(s => {
+            const voucherNum = s.voucherNo 
+                ? (s.voucherNo.startsWith("SAL-") ? s.voucherNo : `SAL-UDG-${s.voucherNo}`) 
+                : `SAL-UDG-${s._id ? s._id.slice(-4).toUpperCase() : '1001'}`;
+
+            const base = s.baseSalary || 0;
+            const bonus = s.bonus || 0;
+            const deductions = s.deductions || 0;
+            const net = (base + bonus) - deductions;
+
+            const formattedDate = s.createdAt || s.paymentDate || s.date
+                ? new Date(s.createdAt || s.paymentDate || s.date).toLocaleDateString("en-IN")
+                : '-';
+
+            return `
+                <tr>
+                    <td><strong>${voucherNum}</strong></td>
+                    <td>${s.month || '-'}</td>
+                    <td>₹${base.toLocaleString()}</td>
+                    <td>+₹${bonus.toLocaleString()}</td>
+                    <td>-₹${deductions.toLocaleString()}</td>
+                    <td><strong style="color:#2ecc71;">₹${net.toLocaleString()}</strong></td>
+                    <td>${formattedDate}</td>
+                </tr>
+            `;
+        }).join("");
     } catch (err) {
         console.error("Salaries error:", err);
     }
