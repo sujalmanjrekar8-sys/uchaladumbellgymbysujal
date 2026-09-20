@@ -174,15 +174,16 @@ async function toggleWorkoutDone(workoutId) {
 
 // Delete Workout Routine
 async function deleteWorkoutRoutine(workoutId) {
-    if (!confirm("Are you sure you want to delete this workout routine?")) return;
+    const confirmed = await customConfirm("Are you sure you want to delete this workout routine?", "Delete Workout Routine", "Yes, Delete", "Cancel", true);
+    if (!confirmed) return;
     try {
         await fetchAuth(`/trainer/workouts/${workoutId}`, {
             method: "DELETE"
         });
-        alert("Workout routine removed.");
+        await customAlert("Workout routine removed successfully.", "Workout Deleted", "success");
         loadWorkouts();
     } catch (err) {
-        alert(err.message);
+        customAlert(err.message, "Error", "error");
     }
 }
 
@@ -280,15 +281,16 @@ function openEditTraineeAttendanceModal(id, name, status, notes) {
 
 // Delete Trainee Attendance Record
 async function deleteTraineeAttendanceRecord(id) {
-    if (!confirm("Are you sure you want to delete this trainee attendance record?")) return;
+    const confirmed = await customConfirm("Are you sure you want to delete this trainee attendance record?", "Delete Attendance Record", "Yes, Delete", "Cancel", true);
+    if (!confirmed) return;
     try {
         await fetchAuth(`/trainer/trainee-attendance/${id}`, {
             method: "DELETE"
         });
-        alert("Attendance record removed.");
+        await customAlert("Trainee attendance record removed.", "Attendance Deleted", "success");
         loadTraineeAttendance();
     } catch (err) {
-        alert(err.message);
+        customAlert(err.message, "Error", "error");
     }
 }
 

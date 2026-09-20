@@ -351,12 +351,13 @@ const loadMemberAttendance = loadAttendance;
 const loadTrainerAttendance = loadAttendance;
 
 async function deleteAttendanceRecord(id) {
-    if (!confirm('Delete this attendance record?')) return;
+    const confirmed = await customConfirm('Are you sure you want to delete this attendance record?', 'Delete Attendance', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/attendance/${id}`);
-        alert(res.message || 'Deleted successfully');
+        await customAlert(res.message || 'Deleted successfully', 'Success', 'success');
         loadAttendance();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 // Payments
@@ -412,12 +413,13 @@ function recalcEditPayDue() {
 }
 
 async function deletePaymentRecord(id, inv) {
-    if (!confirm(`Delete invoice ${inv}?`)) return;
+    const confirmed = await customConfirm(`Are you sure you want to delete invoice ${inv}?`, 'Delete Payment Record', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/payments/${id}`);
-        alert(res.message || 'Invoice deleted');
+        await customAlert(res.message || 'Invoice deleted', 'Payment Deleted', 'success');
         loadPayments();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 function openPayDueModal(id, invoiceNumber, dueAmount) {
@@ -483,12 +485,13 @@ function recalcEditSalaryNet() {
 }
 
 async function deleteSalarySlip(id, vch) {
-    if (!confirm(`Delete salary voucher ${vch}?`)) return;
+    const confirmed = await customConfirm(`Are you sure you want to delete salary voucher ${vch}?`, 'Delete Salary Voucher', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/salaries/${id}`);
-        alert(res.message || 'Salary record deleted');
+        await customAlert(res.message || 'Salary record deleted', 'Salary Voucher Deleted', 'success');
         loadSalaries();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 // Workouts & Diets Overview
@@ -572,11 +575,11 @@ document.getElementById('registerMemberForm').addEventListener('submit', async f
             password: document.getElementById('regMemPassword').value || 'member123',
             assignedTrainer: document.getElementById('regMemTrainer').value || null
         });
-        alert('Member registered successfully!');
+        await customAlert('Member registered successfully!', 'Member Created', 'success');
         closeModal('registerMemberModal');
         this.reset();
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Add Trainer
@@ -591,11 +594,11 @@ document.getElementById('addTrainerForm').addEventListener('submit', async funct
             specialization: document.getElementById('addTraSpec').value,
             monthlySalary: Number(document.getElementById('addTraSalary').value)
         });
-        alert('Trainer added successfully!');
+        await customAlert('Trainer added successfully!', 'Trainer Created', 'success');
         closeModal('addTrainerModal');
         this.reset();
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Assign Plan
@@ -607,10 +610,10 @@ document.getElementById('assignPlanForm').addEventListener('submit', async funct
             planId: document.getElementById('assignPlanSelect').value,
             startDate: document.getElementById('assignPlanStartDate').value
         });
-        alert(res.message || 'Plan activated!');
+        await customAlert(res.message || 'Plan activated!', 'Plan Assigned', 'success');
         closeModal('assignPlanModal');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Create Plan
@@ -623,11 +626,11 @@ document.getElementById('createPlanForm').addEventListener('submit', async funct
             price: Number(document.getElementById('planPrice').value),
             features: document.getElementById('planFeatures').value
         });
-        alert('Plan created successfully!');
+        await customAlert('Plan created successfully!', 'Membership Plan Saved', 'success');
         closeModal('createPlanModal');
         this.reset();
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Record Fee Payment
@@ -641,11 +644,11 @@ document.getElementById('recordFeeForm').addEventListener('submit', async functi
             paidAmount: Number(document.getElementById('feeAmountPaid').value),
             paymentMode: document.getElementById('feePaymentMode').value
         });
-        alert('Payment recorded and Invoice generated!');
+        await customAlert('Payment recorded and Invoice generated!', 'Payment Recorded', 'success');
         closeModal('recordFeeModal');
         this.reset();
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Assign Trainer Direct Form
@@ -656,9 +659,9 @@ document.getElementById('assignTrainerDirectForm').addEventListener('submit', as
             memberId: document.getElementById('assignTraineeMemberSelect').value,
             trainerId: document.getElementById('assignTraineeTrainerSelect').value
         });
-        alert('Trainer assigned successfully!');
+        await customAlert('Trainer assigned successfully!', 'Coach Assigned', 'success');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Mark Attendance
@@ -670,10 +673,10 @@ document.getElementById('markAttendanceForm').addEventListener('submit', async f
             userRole: document.getElementById('attRoleSelect').value,
             status: document.getElementById('attStatusSelect').value
         });
-        alert('Attendance marked successfully!');
+        await customAlert('Attendance marked successfully!', 'Attendance Marked', 'success');
         closeModal('markAttendanceModal');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Salary Voucher
@@ -694,11 +697,11 @@ document.getElementById('salaryVoucherForm').addEventListener('submit', async fu
             bonuses: Number(document.getElementById('salBonus').value) || 0,
             deductions: Number(document.getElementById('salDeductions').value) || 0
         });
-        alert('Salary voucher issued!');
+        await customAlert('Salary voucher issued successfully!', 'Voucher Issued', 'success');
         closeModal('salaryVoucherModal');
         this.reset();
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Reset Password
@@ -715,9 +718,9 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async fu
     const newPassword = document.getElementById('resetNewPass').value;
     try {
         const res = await api.put(`/owner/users/${userId}/reset-password`, { newPassword });
-        alert(res.message || 'Password reset successfully!');
+        await customAlert(res.message || 'Password reset successfully!', 'Password Reset', 'success');
         closeModal('resetPasswordModal');
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Edit Member
@@ -744,19 +747,20 @@ document.getElementById('editMemberForm').addEventListener('submit', async funct
             assignedTrainer: document.getElementById('editMemTrainer').value || null,
             isActive: document.getElementById('editMemStatus').value === 'Active'
         });
-        alert('Member details updated!');
+        await customAlert('Member details updated!', 'Member Updated', 'success');
         closeModal('editMemberModal');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 async function deleteMember(id, name) {
-    if (!confirm(`Delete member "${name}"?`)) return;
+    const confirmed = await customConfirm(`Are you sure you want to delete member "${name}"?`, 'Delete Member', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/members/${id}`);
-        alert(res.message || 'Member deleted');
+        await customAlert(res.message || 'Member deleted', 'Member Deleted', 'success');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 // Edit Trainer
@@ -785,19 +789,20 @@ document.getElementById('editTrainerForm').addEventListener('submit', async func
             monthlySalary: Number(document.getElementById('editTraSalary').value),
             isActive: document.getElementById('editTraStatus').value === 'Active'
         });
-        alert('Trainer details updated!');
+        await customAlert('Trainer details updated!', 'Trainer Updated', 'success');
         closeModal('editTrainerModal');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 async function deleteTrainer(id, name) {
-    if (!confirm(`Delete trainer "${name}"?`)) return;
+    const confirmed = await customConfirm(`Are you sure you want to delete trainer "${name}"?`, 'Delete Trainer', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/trainers/${id}`);
-        alert(res.message || 'Trainer deleted');
+        await customAlert(res.message || 'Trainer deleted', 'Trainer Deleted', 'success');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 // Edit Plan
@@ -812,12 +817,13 @@ function openEditPlanModal(id) {
 }
 
 async function deletePlan(id, name) {
-    if (!confirm(`Delete plan "${name}"?`)) return;
+    const confirmed = await customConfirm(`Are you sure you want to delete plan "${name}"?`, 'Delete Membership Plan', 'Yes, Delete', 'Cancel', true);
+    if (!confirmed) return;
     try {
         const res = await api.delete(`/owner/plans/${id}`);
-        alert(res.message || 'Plan deleted');
+        await customAlert(res.message || 'Plan deleted', 'Plan Deleted', 'success');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
 // Collect Remaining Due Fee
