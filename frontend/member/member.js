@@ -188,10 +188,10 @@ async function loadMyDiet() {
                 const pMeal = diet.meals.find(m => m.mealTime === 'Pre-Workout' || m.mealTime === 'Morning Snack');
                 const dMeal = diet.meals.find(m => m.mealTime === 'Dinner' || m.mealTime === 'Post-Workout');
 
-                if (bMeal) bText = bMeal.items + (bMeal.calories ? ` <span style="color:#f39c12;">(${bMeal.calories} kcal)</span>` : '');
-                if (lMeal) lText = lMeal.items + (lMeal.calories ? ` <span style="color:#f39c12;">(${lMeal.calories} kcal)</span>` : '');
-                if (pMeal) pText = pMeal.items + (pMeal.calories ? ` <span style="color:#f39c12;">(${pMeal.calories} kcal)</span>` : '');
-                if (dMeal) dText = dMeal.items + (dMeal.calories ? ` <span style="color:#f39c12;">(${dMeal.calories} kcal)</span>` : '');
+                if (bMeal) bText = bMeal.items;
+                if (lMeal) lText = lMeal.items;
+                if (pMeal) pText = pMeal.items;
+                if (dMeal) dText = dMeal.items;
             }
 
             document.getElementById("dietBreakfastText").innerHTML = bText || '4 Whole Eggs / 100g Paneer + 60g Oats + 1 Banana';

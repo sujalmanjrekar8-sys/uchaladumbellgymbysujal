@@ -202,7 +202,7 @@ async function loadDiets() {
         tbody.innerHTML = allDiets.map(d => {
             let mealsHtml = '-';
             if (d.meals && Array.isArray(d.meals) && d.meals.length > 0) {
-                mealsHtml = d.meals.map(m => `<strong>${m.mealTime || 'Meal'}:</strong> ${m.items}${m.calories ? ` <span style="color:#a0aec0;">(${m.calories} kcal)</span>` : ''}`).join('<br>');
+                mealsHtml = d.meals.map(m => `<strong>${m.mealTime || 'Meal'}:</strong> ${m.items}`).join('<br>');
             } else {
                 const parts = [];
                 if (d.breakfast) parts.push(`<strong>Breakfast:</strong> ${d.breakfast}`);
