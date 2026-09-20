@@ -271,7 +271,7 @@
             <div class="page-title flex-between">
                 <div>
                     <h1>Customer Payments & Receipts</h1>
-                    <p>Track membership fees, collect pending balances, and view invoices</p>
+                    <p>Track membership fees, collect pending balances, edit entries and view invoices</p>
                 </div>
                 <button type="button" onclick="openModal('recordFeeModal')" class="btn-primary">+ Record Payment</button>
             </div>
@@ -285,11 +285,13 @@
                             <th>Paid (₹)</th>
                             <th>Due (₹)</th>
                             <th>Date</th>
-                            <th>Status / Action</th>
+                            <th>Mode</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="paymentsTableBody">
-                        <tr><td colspan="7" style="text-align:center; color:#777;">Loading payments...</td></tr>
+                        <tr><td colspan="9" style="text-align:center; color:#777;">Loading payments...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -300,7 +302,7 @@
             <div class="page-title flex-between">
                 <div>
                     <h1>Trainer Salaries & Vouchers</h1>
-                    <p>Disburse coach compensation and print vouchers</p>
+                    <p>Disburse coach compensation, edit salary entries and manage vouchers</p>
                 </div>
                 <button type="button" onclick="openModal('salaryVoucherModal')" class="btn-primary">+ Issue Salary Voucher</button>
             </div>
@@ -313,12 +315,14 @@
                             <th>Month</th>
                             <th>Base Salary</th>
                             <th>Bonus</th>
+                            <th>Deductions</th>
                             <th>Net Paid</th>
                             <th>Disbursed Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="salariesTableBody">
-                        <tr><td colspan="7" style="text-align:center; color:#777;">Loading salary logs...</td></tr>
+                        <tr><td colspan="9" style="text-align:center; color:#777;">Loading salary logs...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -328,19 +332,19 @@
         <section id="section-workouts-overview" class="content-section" style="display: none;">
             <div class="page-title">
                 <h1>Workouts Overview</h1>
-                <p>All active workout splits across coaches and athletes</p>
+                <p>All active workout splits across coaches and athletes with real-time completion status</p>
             </div>
             <div class="table-card">
                 <table>
                     <thead>
                         <tr>
-                            <th>Date</th>
+                            <th>Day / Date</th>
                             <th>Athlete</th>
                             <th>Trainer</th>
-                            <th>Category</th>
-                            <th>Exercise</th>
-                            <th>Sets x Reps</th>
-                            <th>Weight</th>
+                            <th>Workout Title</th>
+                            <th>Exercises (Sets x Reps)</th>
+                            <th>Trainer Notes</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="allWorkoutsTableBody">
@@ -354,7 +358,7 @@
         <section id="section-diets-overview" class="content-section" style="display: none;">
             <div class="page-title">
                 <h1>Diets Overview</h1>
-                <p>All nutritional programs assigned to gym members</p>
+                <p>All nutritional programs and meal schedules assigned to gym members</p>
             </div>
             <div class="table-card">
                 <table>
@@ -362,14 +366,13 @@
                         <tr>
                             <th>Athlete</th>
                             <th>Trainer</th>
-                            <th>Goal / Title</th>
-                            <th>Calories</th>
-                            <th>Protein</th>
-                            <th>Meal Details</th>
+                            <th>Diet Type</th>
+                            <th>Goal Target</th>
+                            <th>Meals Breakdown</th>
                         </tr>
                     </thead>
                     <tbody id="allDietsTableBody">
-                        <tr><td colspan="6" style="text-align:center; color:#777;">Loading diet sheets...</td></tr>
+                        <tr><td colspan="5" style="text-align:center; color:#777;">Loading diet sheets...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -826,6 +829,131 @@
   </div>
 </div>
 
-    <script src="owner.js?v=2"></script>
+<!-- MODAL: EDIT PAYMENT -->
+<div id="editPaymentModal" class="modal-bg" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Edit Customer Payment Record</h3>
+      <span onclick="closeModal('editPaymentModal')" class="close-btn">&times;</span>
+    </div>
+    <form id="editPaymentForm">
+      <input type="hidden" id="editPaymentId">
+      
+      <div class="form-group">
+        <label>Invoice #</label>
+        <input type="text" id="editPayInvoiceNo" disabled>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total Plan Cost (₹) *</label>
+          <input type="number" id="editPayTotalAmount" required oninput="recalcEditPayDue()">
+        </div>
+        <div class="form-group">
+          <label>Paid Amount (₹) *</label>
+          <input type="number" id="editPayPaidAmount" required oninput="recalcEditPayDue()">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Remaining Due (₹)</label>
+          <input type="number" id="editPayDueAmount" readonly style="color:#e74c3c; font-weight:bold;">
+        </div>
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="editPayMode">
+            <option value="Cash">Cash</option>
+            <option value="UPI / GPay / PhonePe">UPI / GPay / PhonePe</option>
+            <option value="Debit/Credit Card">Debit/Credit Card</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Date</label>
+        <input type="date" id="editPayDate">
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="editPayNotes" placeholder="Optional payment remarks">
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Payment Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: EDIT SALARY VOUCHER -->
+<div id="editSalaryModal" class="modal-bg" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Edit Trainer Salary Voucher</h3>
+      <span onclick="closeModal('editSalaryModal')" class="close-btn">&times;</span>
+    </div>
+    <form id="editSalaryForm">
+      <input type="hidden" id="editSalaryId">
+      
+      <div class="form-group">
+        <label>Voucher #</label>
+        <input type="text" id="editSalVoucherNo" disabled>
+      </div>
+
+      <div class="form-group">
+        <label>Month *</label>
+        <input type="text" id="editSalMonth" required placeholder="e.g. September 2026">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Base Salary (₹) *</label>
+          <input type="number" id="editSalBase" required oninput="recalcEditSalaryNet()">
+        </div>
+        <div class="form-group">
+          <label>Bonuses (₹)</label>
+          <input type="number" id="editSalBonus" value="0" oninput="recalcEditSalaryNet()">
+        </div>
+        <div class="form-group">
+          <label>Deductions (₹)</label>
+          <input type="number" id="editSalDeduct" value="0" oninput="recalcEditSalaryNet()">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Net Payout (₹)</label>
+          <input type="number" id="editSalNet" readonly style="color:#2ecc71; font-weight:bold;">
+        </div>
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="editSalMode">
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="UPI">UPI</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="editSalStatus">
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Disbursed Date</label>
+        <input type="date" id="editSalDate">
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Salary Changes</button>
+    </form>
+  </div>
+</div>
+
+    <script src="owner.js?v=4"></script>
 </body>
 </html>
