@@ -347,6 +347,9 @@ async function loadAttendance() {
     } catch (err) {}
 }
 
+const loadMemberAttendance = loadAttendance;
+const loadTrainerAttendance = loadAttendance;
+
 async function deleteAttendanceRecord(id) {
     if (!confirm('Delete this attendance record?')) return;
     try {
