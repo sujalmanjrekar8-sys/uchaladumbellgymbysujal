@@ -71,42 +71,63 @@ function logout() {
 
 // ==================== DATA LOADERS ====================
 
-// 1. Load Profile & Today's Workout
-async function loadTodayWorkout() {
+let currentSelectedWorkoutDay = null;
+
+function selectWorkoutDay(dayName) {
+    currentSelectedWorkoutDay = dayName;
+    loadTodayWorkout(dayName);
+}
+
+// 1. Load Profile & Today's Workout Split
+async function loadTodayWorkout(dayOverride) {
     document.getElementById("memberNameDisplay").textContent = currentUser.name || "Athlete";
     document.getElementById("memberCustomId").textContent = currentUser.gymId || currentUser.customId || currentUser.memberId || "UDGMEM-1001";
     document.getElementById("memberIdBadge").textContent = currentUser.gymId || currentUser.customId || currentUser.memberId || "UDGMEM-1001";
     document.getElementById("memberWelcomeTitle").textContent = `Welcome Back, ${currentUser.name || 'Member'}!`;
 
     try {
-        const profile = await fetchAuth("/member/profile");
-        
-        if (profile.assignedTrainer) {
-            document.getElementById("memberCoachSubtitle").textContent = `Assigned Coach: ${profile.assignedTrainer.name} (${profile.assignedTrainer.specialization || 'Strength Coach'})`;
-        } else {
-            document.getElementById("memberCoachSubtitle").textContent = `Floor Coach On Duty`;
-        }
+        try {
+            const profile = await fetchAuth("/member/profile");
+            if (profile && profile.assignedTrainer) {
+                document.getElementById("memberCoachSubtitle").textContent = `Assigned Coach: ${profile.assignedTrainer.name} (${profile.assignedTrainer.specialization || 'Strength Coach'})`;
+            } else {
+                document.getElementById("memberCoachSubtitle").textContent = `Floor Coach On Duty`;
+            }
+        } catch (pe) {}
 
-        // Fetch today's workout split
+        // User's browser local day
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const localToday = days[new Date().getDay()];
+        const targetDay = dayOverride || currentSelectedWorkoutDay || localToday;
+        currentSelectedWorkoutDay = targetDay;
+
+        // Highlight active day pill in UI
+        document.querySelectorAll('.day-pill').forEach(pill => {
+            if (pill.getAttribute('data-day') === targetDay) {
+                pill.classList.add('active');
+            } else {
+                pill.classList.remove('active');
+            }
+        });
+
+        // Fetch workout split for targetDay (passing local client day)
         let workoutData = null;
         try {
-            workoutData = await fetchAuth("/member/today-workout");
+            workoutData = await fetchAuth(`/member/today-workout?day=${encodeURIComponent(targetDay)}`);
         } catch (e) {
             workoutData = await fetchAuth("/member/workouts");
         }
 
-        const currentDay = workoutData.currentDay || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+        const currentDay = targetDay;
         let todayList = [];
 
         if (workoutData.todayWorkouts && Array.isArray(workoutData.todayWorkouts) && workoutData.todayWorkouts.length > 0) {
             todayList = workoutData.todayWorkouts;
-        } else if (Array.isArray(workoutData)) {
-            todayList = workoutData.filter(w => (w.day || w.dayOfWeek) === currentDay);
-            if (todayList.length === 0 && workoutData.length > 0) todayList = workoutData;
         } else if (workoutData.allWorkouts && Array.isArray(workoutData.allWorkouts)) {
             todayList = workoutData.allWorkouts.filter(w => (w.day || w.dayOfWeek) === currentDay);
-            if (todayList.length === 0 && workoutData.todayWorkout) todayList = [workoutData.todayWorkout];
-        } else if (workoutData.todayWorkout) {
+        } else if (Array.isArray(workoutData)) {
+            todayList = workoutData.filter(w => (w.day || w.dayOfWeek) === currentDay);
+        } else if (workoutData.todayWorkout && (workoutData.todayWorkout.day || workoutData.todayWorkout.dayOfWeek) === currentDay) {
             todayList = [workoutData.todayWorkout];
         }
 
@@ -119,7 +140,7 @@ async function loadTodayWorkout() {
             if (statusContainer) {
                 statusContainer.innerHTML = `<span class="badge-active" style="padding: 6px 14px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: #60a5fa;">Rest Day</span>`;
             }
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No specific workout split scheduled for ${currentDay}. Check with your coach!</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No workout routine scheduled for ${currentDay}. Click another day above to view routines!</td></tr>`;
             return;
         }
 
@@ -149,7 +170,7 @@ async function loadTodayWorkout() {
         todayList.forEach((w, idx) => {
             const rTitle = w.workoutTitle || w.title || w.category || `Routine #${idx + 1}`;
             if (todayList.length > 1) {
-                rowsHtml += `<tr style="background: rgba(243, 156, 18, 0.08);"><td colspan="4" style="color: #f39c12; font-weight: bold; font-size: 13px;">${rTitle} (${w.isCompleted ? 'Completed' : 'Pending'})</td></tr>`;
+                rowsHtml += `<tr style="background: rgba(243, 156, 18, 0.08);"><td colspan="4" style="color: #f39c12; font-weight: bold; font-size: 13px;">📌 ${rTitle} (${w.isCompleted ? 'Completed' : 'Pending'})</td></tr>`;
             }
 
             if (w.exercises && Array.isArray(w.exercises) && w.exercises.length > 0) {

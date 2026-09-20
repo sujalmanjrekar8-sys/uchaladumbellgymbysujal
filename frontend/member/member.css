@@ -360,3 +360,29 @@ tbody tr:hover {
     outline: none;
     border-color: #f39c12;
 }
+
+/* DAY SELECTOR PILLS */
+.day-pill {
+    background: #151a26;
+    border: 1px solid #283046;
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.day-pill:hover {
+    border-color: #f39c12;
+    color: #f39c12;
+}
+
+.day-pill.active {
+    background: #f39c12;
+    color: #0b0d13;
+    border-color: #f39c12;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}

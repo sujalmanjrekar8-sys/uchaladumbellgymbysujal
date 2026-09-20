@@ -11,9 +11,10 @@ const Payment = require('../models/Payment');
 const getTodayWorkout = async (req, res) => {
   try {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const currentDay = daysOfWeek[new Date().getDay()];
+    // Allow client to pass their local day of week (avoids server UTC timezone mismatch)
+    const currentDay = req.query.day || daysOfWeek[new Date().getDay()];
 
-    // Find all workouts specifically for today
+    // Find all workouts specifically for requested day
     const todayWorkouts = await Workout.find({
       member: req.user._id,
       day: currentDay
