@@ -90,10 +90,12 @@
                             <th>Workout Title</th>
                             <th>Exercises (Sets x Reps)</th>
                             <th>Trainer Notes</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="workoutsTableBody">
-                        <tr><td colspan="5" style="text-align:center; color:#777;">Loading workout routines...</td></tr>
+                        <tr><td colspan="7" style="text-align:center; color:#777;">Loading workout routines...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -147,10 +149,11 @@
                             <th>Trainee Name</th>
                             <th>Time</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="traineeAttendanceTableBody">
-                        <tr><td colspan="4" style="text-align:center; color:#777;">Loading attendance...</td></tr>
+                        <tr><td colspan="5" style="text-align:center; color:#777;">Loading attendance...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -339,7 +342,37 @@
         </div>
     </div>
 
-    <!-- MODAL 4: CHANGE MY PASSWORD -->
+    <!-- MODAL 4: EDIT TRAINEE ATTENDANCE -->
+    <div id="editTraineeAttendanceModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Edit Trainee Attendance</h3>
+                <span onclick="closeModal('editTraineeAttendanceModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="editTraineeAttendanceForm">
+                <input type="hidden" id="editTraineeAttId">
+                <div class="form-group">
+                    <label>Trainee Name</label>
+                    <input type="text" id="editTraineeAttName" readonly style="background:#1a202c; color:#a0aec0;">
+                </div>
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select id="editTraineeAttStatus" required>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input type="text" id="editTraineeAttNotes" placeholder="Optional notes">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Attendance</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: CHANGE MY PASSWORD -->
     <div id="changePasswordModal" class="modal-bg" style="display: none;">
         <div class="modal-card">
             <div class="modal-header">
@@ -360,6 +393,6 @@
         </div>
     </div>
 
-    <script src="trainer.js"></script>
+    <script src="trainer.js?v=4"></script>
 </body>
 </html>

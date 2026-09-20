@@ -14,6 +14,8 @@ const {
   assignOrUpdateDiet,
   deleteDiet,
   markTraineeAttendance,
+  updateTraineeAttendance,
+  deleteTraineeAttendance,
   getMyTraineesAttendance,
   getMyOwnAttendance,
   getMySalaries
@@ -45,6 +47,8 @@ router.delete('/diets/:id', deleteDiet);
 router.post('/attendance', markTraineeAttendance);
 router.get('/attendance/trainees', getMyTraineesAttendance);
 router.get('/trainee-attendance', getMyTraineesAttendance);
+router.put('/trainee-attendance/:id', updateTraineeAttendance);
+router.delete('/trainee-attendance/:id', deleteTraineeAttendance);
 router.get('/attendance/my-attendance', getMyOwnAttendance);
 router.get('/my-attendance', getMyOwnAttendance);
 

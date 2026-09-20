@@ -30,11 +30,13 @@ async function fetchAuth(endpoint, options = {}) {
 
 // Modal Helpers
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = "flex";
+    const m = document.getElementById(modalId);
+    if (m) m.style.display = "flex";
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = "none";
+    const m = document.getElementById(modalId);
+    if (m) m.style.display = "none";
 }
 
 window.addEventListener("click", function (e) {
@@ -87,7 +89,7 @@ async function loadTrainees() {
         myTrainees = Array.isArray(data) ? data : (data.trainees || []);
 
         const tbody = document.getElementById("traineesTableBody");
-        if (myTrainees.length === 0) {
+        if (!myTrainees || myTrainees.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">No athletes currently assigned to you</td></tr>`;
             return;
         }
@@ -114,34 +116,81 @@ async function loadTrainees() {
 // 2. Load Workouts
 async function loadWorkouts() {
     try {
-        allWorkouts = await fetchAuth("/trainer/workouts");
+        const data = await fetchAuth("/trainer/workouts");
+        allWorkouts = Array.isArray(data) ? data : (data.workouts || []);
         const tbody = document.getElementById("workoutsTableBody");
 
         if (!allWorkouts || allWorkouts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">No workout schedules assigned yet</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#777;">No workout schedules assigned yet</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = allWorkouts.map(w => `
-            <tr>
-                <td><strong>${w.dayOfWeek || w.date || 'Daily'}</strong></td>
-                <td>${w.member ? w.member.name : (w.athleteName || '-')}</td>
-                <td><strong style="color:#f39c12;">${w.title || w.category || 'Workout'}</strong></td>
-                <td>
-                    ${w.exercises && w.exercises.length > 0 
-                        ? w.exercises.map(e => `${e.name} (${e.sets}x${e.reps}${e.weight ? ` @ ${e.weight}` : ''})`).join("<br>") 
-                        : (w.exercise ? `${w.exercise} (${w.setsReps || '4x10'})` : '-')}
-                </td>
-                <td style="color:#a0aec0; font-size:12px;">${w.notes || '-'}</td>
-            </tr>
-        `).join("");
-    } catch (err) {}
+        tbody.innerHTML = allWorkouts.map(w => {
+            const isCompleted = w.isCompleted === true;
+            const statusBadge = isCompleted 
+                ? '<span class="badge-active">Completed ✅</span>' 
+                : '<span class="badge-due">Pending ⏳</span>';
+
+            const toggleBtn = isCompleted
+                ? `<button class="btn-done-pending" onclick="toggleWorkoutDone('${w._id}')">Mark Pending ⏳</button>`
+                : `<button class="btn-done-complete" onclick="toggleWorkoutDone('${w._id}')">Mark Done ✅</button>`;
+
+            return `
+                <tr>
+                    <td><strong>${w.day || w.dayOfWeek || 'Daily'}</strong></td>
+                    <td>${w.member ? w.member.name : (w.athleteName || '-')}</td>
+                    <td><strong style="color:#f39c12;">${w.workoutTitle || w.title || w.category || 'Workout'}</strong></td>
+                    <td>
+                        ${w.exercises && w.exercises.length > 0 
+                            ? w.exercises.map(e => `${e.name} (${e.sets || 4}x${e.reps || 10}${e.weight ? ` @ ${e.weight}` : ''})`).join("<br>") 
+                            : (w.exercise ? `${w.exercise} (${w.setsReps || '4x10'})` : '-')}
+                    </td>
+                    <td style="color:#a0aec0; font-size:12px;">${w.notes || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        ${toggleBtn}
+                        <button class="btn-action-delete" onclick="deleteWorkoutRoutine('${w._id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Workouts error:", err);
+    }
+}
+
+// Toggle Workout Completion Status
+async function toggleWorkoutDone(workoutId) {
+    try {
+        const data = await fetchAuth(`/trainer/workouts/${workoutId}/complete`, {
+            method: "PUT"
+        });
+        alert(data.message || "Workout completion status updated!");
+        loadWorkouts();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+// Delete Workout Routine
+async function deleteWorkoutRoutine(workoutId) {
+    if (!confirm("Are you sure you want to delete this workout routine?")) return;
+    try {
+        await fetchAuth(`/trainer/workouts/${workoutId}`, {
+            method: "DELETE"
+        });
+        alert("Workout routine removed.");
+        loadWorkouts();
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
 // 3. Load Diets
 async function loadDiets() {
     try {
-        allDiets = await fetchAuth("/trainer/diets");
+        const data = await fetchAuth("/trainer/diets");
+        allDiets = Array.isArray(data) ? data : (data.diets || []);
         const tbody = document.getElementById("dietsTableBody");
 
         if (!allDiets || allDiets.length === 0) {
@@ -173,7 +222,9 @@ async function loadDiets() {
                 </tr>
             `;
         }).join("");
-    } catch (err) {}
+    } catch (err) {
+        console.error("Diets error:", err);
+    }
 }
 
 // 4. Load Trainee Attendance
@@ -183,29 +234,69 @@ async function loadTraineeAttendance() {
     dateInput.value = date;
 
     try {
-        const list = await fetchAuth(`/trainer/trainee-attendance?date=${date}`);
+        const data = await fetchAuth(`/trainer/trainee-attendance?date=${date}`);
+        const list = Array.isArray(data) ? data : (data.attendance || []);
         const tbody = document.getElementById("traineeAttendanceTableBody");
 
         if (!list || list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No check-ins recorded for ${date}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">No check-ins recorded for ${date}</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = list.map(a => `
-            <tr>
-                <td><strong>${a.user ? (a.user.gymId || a.user.customId || '-') : '-'}</strong></td>
-                <td>${a.user ? a.user.name : '-'}</td>
-                <td>${a.inTime || 'Present'}</td>
-                <td><span class="badge-active">${a.status}</span></td>
-            </tr>
-        `).join("");
-    } catch (err) {}
+        tbody.innerHTML = list.map(a => {
+            const traineeName = a.user ? a.user.name : '-';
+            const gymId = a.user ? (a.user.gymId || a.user.customId || '-') : '-';
+            const safeName = traineeName.replace(/'/g, "\\'");
+            const safeNotes = (a.notes || '').replace(/'/g, "\\'");
+
+            const statusClass = a.status === 'Present' ? 'badge-active' : 'badge-due';
+
+            return `
+                <tr>
+                    <td><strong>${gymId}</strong></td>
+                    <td>${traineeName}</td>
+                    <td>${a.inTime || new Date(a.date).toLocaleDateString()}</td>
+                    <td><span class="${statusClass}">${a.status}</span></td>
+                    <td>
+                        <button class="btn-action-edit" onclick="openEditTraineeAttendanceModal('${a._id}', '${safeName}', '${a.status}', '${safeNotes}')">Edit</button>
+                        <button class="btn-action-delete" onclick="deleteTraineeAttendanceRecord('${a._id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Trainee attendance error:", err);
+    }
+}
+
+// Modal Open/Close for Edit Trainee Attendance
+function openEditTraineeAttendanceModal(id, name, status, notes) {
+    document.getElementById("editTraineeAttId").value = id;
+    document.getElementById("editTraineeAttName").value = name;
+    document.getElementById("editTraineeAttStatus").value = status || "Present";
+    document.getElementById("editTraineeAttNotes").value = notes || "";
+    openModal("editTraineeAttendanceModal");
+}
+
+// Delete Trainee Attendance Record
+async function deleteTraineeAttendanceRecord(id) {
+    if (!confirm("Are you sure you want to delete this trainee attendance record?")) return;
+    try {
+        await fetchAuth(`/trainer/trainee-attendance/${id}`, {
+            method: "DELETE"
+        });
+        alert("Attendance record removed.");
+        loadTraineeAttendance();
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
 // 5. Load My Attendance
 async function loadMyAttendance() {
     try {
-        const history = await fetchAuth("/trainer/my-attendance");
+        const data = await fetchAuth("/trainer/my-attendance");
+        const history = Array.isArray(data) ? data : (data.attendance || []);
         const tbody = document.getElementById("myAttendanceTableBody");
 
         if (!history || history.length === 0) {
@@ -215,18 +306,21 @@ async function loadMyAttendance() {
 
         tbody.innerHTML = history.map(h => `
             <tr>
-                <td>${h.date || '-'}</td>
+                <td>${h.date ? new Date(h.date).toLocaleDateString() : '-'}</td>
                 <td>${h.inTime || 'Present'}</td>
-                <td><span class="badge-active">${h.status}</span></td>
+                <td><span class="${h.status === 'Present' ? 'badge-active' : 'badge-due'}">${h.status}</span></td>
             </tr>
         `).join("");
-    } catch (err) {}
+    } catch (err) {
+        console.error("My attendance error:", err);
+    }
 }
 
 // 6. Load Salary Slips
 async function loadSalarySlips() {
     try {
-        const slips = await fetchAuth("/trainer/my-salaries");
+        const data = await fetchAuth("/trainer/my-salaries");
+        const slips = Array.isArray(data) ? data : (data.salaries || []);
         const tbody = document.getElementById("salarySlipsTableBody");
 
         if (!slips || slips.length === 0) {
@@ -238,20 +332,22 @@ async function loadSalarySlips() {
             <tr>
                 <td><strong>${s.voucherNo || s._id.slice(-6).toUpperCase()}</strong></td>
                 <td>${s.month}</td>
-                <td>₹${s.baseSalary}</td>
-                <td>+₹${s.bonus || 0}</td>
-                <td>-₹${s.deductions || 0}</td>
-                <td><strong style="color:#2ecc71;">₹${(s.baseSalary + (s.bonus || 0)) - (s.deductions || 0)}</strong></td>
-                <td>${new Date(s.createdAt || Date.now()).toLocaleDateString()}</td>
+                <td>₹${(s.baseSalary || 0).toLocaleString()}</td>
+                <td>+₹${(s.bonus || 0).toLocaleString()}</td>
+                <td>-₹${(s.deductions || 0).toLocaleString()}</td>
+                <td><strong style="color:#2ecc71;">₹${((s.baseSalary || 0) + (s.bonus || 0) - (s.deductions || 0)).toLocaleString()}</strong></td>
+                <td>${new Date(s.createdAt || s.paymentDate || Date.now()).toLocaleDateString()}</td>
             </tr>
         `).join("");
-    } catch (err) {}
+    } catch (err) {
+        console.error("Salaries error:", err);
+    }
 }
 
 // Helper: Populate trainee selects
 function populateTraineeDropdowns() {
     const options = myTrainees.map(m => 
-        `<option value="${m._id}">${m.name} (${m.gymId || m.customId || m.memberId})</option>`
+        `<option value="${m._id}">${m.name} (${m.gymId || m.customId || m.memberId || 'ID'})</option>`
     ).join("");
 
     ["workoutTraineeSelect", "dietTraineeSelect", "attTraineeSelect"].forEach(id => {
@@ -278,8 +374,8 @@ function quickSetDiet(memberId) {
 document.getElementById("assignWorkoutForm").addEventListener("submit", async function (e) {
     e.preventDefault();
     const memberId = document.getElementById("workoutTraineeSelect").value;
-    const dayOfWeek = document.getElementById("workoutDaySelect").value;
-    const title = document.getElementById("workoutTitleInput").value.trim();
+    const day = document.getElementById("workoutDaySelect").value;
+    const workoutTitle = document.getElementById("workoutTitleInput").value.trim();
     const notes = document.getElementById("workoutNotesInput").value.trim();
 
     const exercises = [];
@@ -287,7 +383,7 @@ document.getElementById("assignWorkoutForm").addEventListener("submit", async fu
     if (ex1Name) {
         exercises.push({
             name: ex1Name,
-            sets: document.getElementById("ex1Sets").value.trim() || "4",
+            sets: parseInt(document.getElementById("ex1Sets").value) || 4,
             reps: document.getElementById("ex1Reps").value.trim() || "10",
             weight: document.getElementById("ex1Weight").value.trim() || ""
         });
@@ -297,7 +393,7 @@ document.getElementById("assignWorkoutForm").addEventListener("submit", async fu
     if (ex2Name) {
         exercises.push({
             name: ex2Name,
-            sets: document.getElementById("ex2Sets").value.trim() || "3",
+            sets: parseInt(document.getElementById("ex2Sets").value) || 3,
             reps: document.getElementById("ex2Reps").value.trim() || "12",
             weight: document.getElementById("ex2Weight").value.trim() || ""
         });
@@ -306,7 +402,7 @@ document.getElementById("assignWorkoutForm").addEventListener("submit", async fu
     try {
         await fetchAuth("/trainer/workouts", {
             method: "POST",
-            body: JSON.stringify({ memberId, dayOfWeek, title, exercises, notes })
+            body: JSON.stringify({ memberId, day, workoutTitle, exercises, notes })
         });
         alert("Workout routine saved & assigned to athlete!");
         closeModal("assignWorkoutModal");
@@ -322,7 +418,7 @@ document.getElementById("setDietForm").addEventListener("submit", async function
     e.preventDefault();
     const memberId = document.getElementById("dietTraineeSelect").value;
     const dietType = document.getElementById("dietTypeSelect").value;
-    const goal = document.getElementById("dietGoalInput").value.trim();
+    const dailyGoal = document.getElementById("dietGoalInput").value.trim();
     const breakfast = document.getElementById("dietBreakfastInput").value.trim();
     const lunch = document.getElementById("dietLunchInput").value.trim();
     const preWorkout = document.getElementById("dietPreWorkoutInput").value.trim();
@@ -331,7 +427,7 @@ document.getElementById("setDietForm").addEventListener("submit", async function
     try {
         await fetchAuth("/trainer/diets", {
             method: "POST",
-            body: JSON.stringify({ memberId, dietType, goal, breakfast, lunch, preWorkout, dinner })
+            body: JSON.stringify({ memberId, dietType, dailyGoal, breakfast, lunch, preWorkout, dinner })
         });
         alert("Diet plan saved & assigned to athlete!");
         closeModal("setDietModal");
@@ -345,13 +441,13 @@ document.getElementById("setDietForm").addEventListener("submit", async function
 // 3. Mark Trainee Attendance Check-In
 document.getElementById("markTraineeAttendanceForm").addEventListener("submit", async function (e) {
     e.preventDefault();
-    const userId = document.getElementById("attTraineeSelect").value;
+    const memberId = document.getElementById("attTraineeSelect").value;
     const status = document.getElementById("attStatusSelect").value;
 
     try {
-        await fetchAuth("/owner/attendance", {
+        await fetchAuth("/trainer/attendance", {
             method: "POST",
-            body: JSON.stringify({ userId, role: "member", status })
+            body: JSON.stringify({ memberId, status })
         });
         alert("Trainee check-in recorded!");
         closeModal("markTraineeAttendanceModal");
@@ -361,7 +457,27 @@ document.getElementById("markTraineeAttendanceForm").addEventListener("submit", 
     }
 });
 
-// 4. Change Password
+// 4. Edit Trainee Attendance Submit
+document.getElementById("editTraineeAttendanceForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const id = document.getElementById("editTraineeAttId").value;
+    const status = document.getElementById("editTraineeAttStatus").value;
+    const notes = document.getElementById("editTraineeAttNotes").value.trim();
+
+    try {
+        await fetchAuth(`/trainer/trainee-attendance/${id}`, {
+            method: "PUT",
+            body: JSON.stringify({ status, notes })
+        });
+        alert("Trainee attendance updated successfully!");
+        closeModal("editTraineeAttendanceModal");
+        loadTraineeAttendance();
+    } catch (err) {
+        alert(err.message);
+    }
+});
+
+// 5. Change Password
 document.getElementById("changePasswordForm").addEventListener("submit", async function (e) {
     e.preventDefault();
     const currentPassword = document.getElementById("trainerOldPass").value;

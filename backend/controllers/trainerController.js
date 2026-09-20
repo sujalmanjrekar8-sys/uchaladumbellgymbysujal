@@ -299,6 +299,50 @@ const deleteDiet = async (req, res) => {
   }
 };
 
+const updateTraineeAttendance = async (req, res) => {
+  try {
+    const { status, notes, date } = req.body;
+    const attendance = await Attendance.findById(req.params.id);
+    if (!attendance) {
+      return res.status(404).json({ success: false, message: 'Attendance record not found.' });
+    }
+
+    const member = await User.findOne({ _id: attendance.user, assignedTrainer: req.user._id });
+    if (!member && req.user.role !== 'owner') {
+      return res.status(403).json({ success: false, message: 'You can only edit attendance for your assigned trainees.' });
+    }
+
+    if (status) attendance.status = status;
+    if (notes !== undefined) attendance.notes = notes;
+    if (date) attendance.date = new Date(date);
+    attendance.markedBy = req.user._id;
+
+    await attendance.save();
+    res.status(200).json({ success: true, message: 'Trainee attendance updated successfully.', attendance });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteTraineeAttendance = async (req, res) => {
+  try {
+    const attendance = await Attendance.findById(req.params.id);
+    if (!attendance) {
+      return res.status(404).json({ success: false, message: 'Attendance record not found.' });
+    }
+
+    const member = await User.findOne({ _id: attendance.user, assignedTrainer: req.user._id });
+    if (!member && req.user.role !== 'owner') {
+      return res.status(403).json({ success: false, message: 'You can only delete attendance for your assigned trainees.' });
+    }
+
+    await Attendance.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: 'Trainee attendance record removed.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getMyTrainees,
   getAllMyWorkouts,
@@ -312,6 +356,8 @@ module.exports = {
   assignOrUpdateDiet,
   deleteDiet,
   markTraineeAttendance,
+  updateTraineeAttendance,
+  deleteTraineeAttendance,
   getMyTraineesAttendance,
   getMyOwnAttendance,
   getMySalaries
