@@ -766,7 +766,6 @@ function openEditAttendanceModal(id, name, status) {
     openModal('editAttendanceModal');
 }
 
-// Handle Edit Form Submit
 document.getElementById('editAttendanceForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const id = document.getElementById('editAttId').value;
