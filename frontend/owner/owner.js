@@ -262,7 +262,7 @@ function populateDropdowns() {
     const memOptions = `<option value="">-- Select Member --</option>` + 
         globalMembers.map(m => `<option value="${m._id}">${m.name} (${m.gymId || m.customId})</option>`).join('');
 
-    ['assignPlanMemberSelect', 'feeMemberSelect', 'assignTraineeMemberSelect'].forEach(id => {
+    ['assignPlanMemberSelect', 'feeMemberSelect', 'assignTraineeMemberSelect', 'directPlanMemberSelect'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = memOptions;
     });
@@ -278,7 +278,7 @@ function populateDropdowns() {
     const planOptions = `<option value="">-- Select Plan --</option>` + 
         globalPlans.map(p => `<option value="${p._id}" data-price="${p.price}">${p.planName || p.name} (₹${p.price})</option>`).join('');
 
-    ['regMemPlan', 'assignPlanSelect', 'feePlanSelect'].forEach(id => {
+    ['regMemPlan', 'assignPlanSelect', 'feePlanSelect', 'directPlanSelect'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = planOptions;
     });
@@ -295,6 +295,9 @@ function populateDropdowns() {
 
     const startDateInput = document.getElementById('assignPlanStartDate');
     if (startDateInput) startDateInput.value = new Date().toISOString().split('T')[0];
+
+    const directStartDateInput = document.getElementById('directPlanStartDate');
+    if (directStartDateInput) directStartDateInput.value = new Date().toISOString().split('T')[0];
 
     onAttRoleChange();
 }
@@ -573,9 +576,11 @@ document.getElementById('registerMemberForm').addEventListener('submit', async f
             email: document.getElementById('regMemEmail').value,
             phone: document.getElementById('regMemPhone').value,
             password: document.getElementById('regMemPassword').value || 'member123',
-            assignedTrainer: document.getElementById('regMemTrainer').value || null
+            planId: document.getElementById('regMemPlan').value || null,
+            assignedTrainer: document.getElementById('regMemTrainer').value || null,
+            paidAmount: Number(document.getElementById('regMemPaid').value) || 0
         });
-        await customAlert('Member registered successfully!', 'Member Created', 'success');
+        await customAlert('Member registered and plan activated successfully!', 'Member Created', 'success');
         closeModal('registerMemberModal');
         this.reset();
         loadAllData();
@@ -650,6 +655,23 @@ document.getElementById('recordFeeForm').addEventListener('submit', async functi
         loadAllData();
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
+
+// Assign Plan Direct Form
+const directPlanForm = document.getElementById('assignPlanDirectForm');
+if (directPlanForm) {
+    directPlanForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        try {
+            const res = await api.post('/owner/assign-plan', {
+                memberId: document.getElementById('directPlanMemberSelect').value,
+                planId: document.getElementById('directPlanSelect').value,
+                startDate: document.getElementById('directPlanStartDate').value
+            });
+            await customAlert(res.message || 'Membership plan activated successfully!', 'Membership Plan Assigned', 'success');
+            loadAllData();
+        } catch (err) { customAlert(err.message, 'Error', 'error'); }
+    });
+}
 
 // Assign Trainer Direct Form
 document.getElementById('assignTrainerDirectForm').addEventListener('submit', async function (e) {

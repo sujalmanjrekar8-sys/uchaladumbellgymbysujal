@@ -76,7 +76,7 @@ const getMembers = async (req, res) => {
 
 const createMember = async (req, res) => {
   try {
-    const { name, email, phone, password, assignedTrainer } = req.body;
+    const { name, email, phone, password, assignedTrainer, planId, paidAmount, paymentMode } = req.body;
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -85,6 +85,21 @@ const createMember = async (req, res) => {
 
     const gymId = await generateNextGymId('UDGMEM', 'member');
 
+    let currentPlan = null;
+    let planStartDate = null;
+    let planEndDate = null;
+
+    let selectedPlan = null;
+    if (planId) {
+      selectedPlan = await MembershipPlan.findById(planId);
+      if (selectedPlan) {
+        currentPlan = selectedPlan._id;
+        planStartDate = new Date();
+        planEndDate = new Date();
+        planEndDate.setMonth(planEndDate.getMonth() + Number(selectedPlan.durationInMonths));
+      }
+    }
+
     const member = await User.create({
       gymId,
       name,
@@ -92,12 +107,37 @@ const createMember = async (req, res) => {
       phone,
       password: password || 'member123',
       role: 'member',
-      assignedTrainer: assignedTrainer || null
+      assignedTrainer: assignedTrainer || null,
+      currentPlan,
+      planStartDate,
+      planEndDate
     });
+
+    // If a plan was chosen during registration, record invoice/payment
+    if (selectedPlan) {
+      const invoiceCount = await Payment.countDocuments();
+      const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
+      const totalAmount = Number(selectedPlan.price) || 0;
+      const amountPaid = Number(paidAmount) || 0;
+      const dueAmount = Math.max(0, totalAmount - amountPaid);
+      const status = dueAmount === 0 ? 'Paid' : (amountPaid > 0 ? 'Partial' : 'Pending');
+
+      await Payment.create({
+        invoiceNumber,
+        member: member._id,
+        membershipPlan: selectedPlan._id,
+        totalAmount,
+        paidAmount: amountPaid,
+        dueAmount,
+        paymentMode: paymentMode || 'Cash',
+        status,
+        notes: 'Initial registration payment'
+      });
+    }
 
     res.status(201).json({
       success: true,
-      message: `Member registered successfully with ID: ${gymId}`,
+      message: `Member registered successfully with ID: ${gymId}${selectedPlan ? ` & plan '${selectedPlan.planName}' activated` : ''}`,
       member
     });
   } catch (error) {

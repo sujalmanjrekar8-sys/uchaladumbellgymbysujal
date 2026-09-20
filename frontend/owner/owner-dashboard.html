@@ -20,6 +20,7 @@
             <button type="button" class="nav-tab" onclick="switchSection('members')">Members</button>
             <button type="button" class="nav-tab" onclick="switchSection('trainers')">Trainers</button>
             <button type="button" class="nav-tab" onclick="switchSection('plans')">Membership Plans</button>
+            <button type="button" class="nav-tab" onclick="switchSection('assign-plan')">Assign Membership Plan</button>
             <button type="button" class="nav-tab" onclick="switchSection('assign-trainer')">Assign Trainer</button>
             <button type="button" class="nav-tab" onclick="switchSection('member-attendance')">Member Attendance</button>
             <button type="button" class="nav-tab" onclick="switchSection('trainer-attendance')">Trainer Attendance</button>
@@ -183,7 +184,34 @@
             <div class="plans-grid" id="plansContainer"></div>
         </section>
 
-        <!-- 5. ASSIGN TRAINER SECTION -->
+        <!-- 5. ASSIGN MEMBERSHIP PLAN SECTION -->
+        <section id="section-assign-plan" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>Assign Membership Plan</h1>
+                <p>Activate membership packages for gym members</p>
+            </div>
+            <div class="form-card">
+                <form id="assignPlanDirectForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Select Athlete *</label>
+                            <select id="directPlanMemberSelect" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Membership Plan *</label>
+                            <select id="directPlanSelect" required></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Plan Start Date *</label>
+                        <input type="date" id="directPlanStartDate" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Activate Membership Plan</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 6. ASSIGN TRAINER SECTION -->
         <section id="section-assign-trainer" class="content-section" style="display: none;">
             <div class="page-title">
                 <h1>Assign Personal Trainer</h1>
