@@ -520,7 +520,7 @@ async function loadWorkouts() {
                     <td style="color:#a0aec0; font-size:12px;">${w.notes || '-'}</td>
                     <td>
                         <span class="${w.isCompleted ? 'badge-active' : 'badge-due'}">
-                            ${w.isCompleted ? 'Completed ✅' : 'Pending ⏳'}
+                            ${w.isCompleted ? 'Completed' : 'Pending'}
                         </span>
                     </td>
                 </tr>

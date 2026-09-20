@@ -99,7 +99,7 @@ const toggleWorkoutCompletion = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Workout marked as ${workout.isCompleted ? 'COMPLETED (DONE) ✅' : 'PENDING ⏳'}`,
+      message: `Workout marked as ${workout.isCompleted ? 'COMPLETED' : 'PENDING'}`,
       workout
     });
   } catch (error) {

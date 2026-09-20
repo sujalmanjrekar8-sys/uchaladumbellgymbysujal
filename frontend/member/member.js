@@ -111,7 +111,7 @@ async function loadTodayWorkout() {
             document.getElementById("workoutDaySubtitle").textContent = `${currentDay}: Rest & Active Recovery Day`;
             document.getElementById("coachNotesText").textContent = `"Rest day or light mobility / cardio recovery."`;
             if (statusContainer) {
-                statusContainer.innerHTML = `<span class="badge-active" style="padding: 6px 14px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: #60a5fa;">Rest Day 🛌</span>`;
+                statusContainer.innerHTML = `<span class="badge-active" style="padding: 6px 14px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: #60a5fa;">Rest Day</span>`;
             }
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No specific workout split scheduled for ${currentDay}. Check with your coach!</td></tr>`;
             return;
@@ -133,8 +133,8 @@ async function loadTodayWorkout() {
         const isCompleted = todayWorkout.isCompleted === true;
         if (statusContainer) {
             statusContainer.innerHTML = isCompleted
-                ? `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">Completed ✅ (Marked by Coach)</span>`
-                : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today ⏳</span>`;
+                ? `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">Completed (Marked by Coach)</span>`
+                : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today</span>`;
         }
 
         // Populate Exercises Table

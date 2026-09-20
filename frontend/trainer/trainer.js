@@ -128,12 +128,12 @@ async function loadWorkouts() {
         tbody.innerHTML = allWorkouts.map(w => {
             const isCompleted = w.isCompleted === true;
             const statusBadge = isCompleted 
-                ? '<span class="badge-active">Completed ✅</span>' 
-                : '<span class="badge-due">Pending ⏳</span>';
+                ? '<span class="badge-active">Completed</span>' 
+                : '<span class="badge-due">Pending</span>';
 
             const toggleBtn = isCompleted
-                ? `<button class="btn-done-pending" onclick="toggleWorkoutDone('${w._id}')">Mark Pending ⏳</button>`
-                : `<button class="btn-done-complete" onclick="toggleWorkoutDone('${w._id}')">Mark Done ✅</button>`;
+                ? `<button class="btn-done-pending" onclick="toggleWorkoutDone('${w._id}')">Mark Pending</button>`
+                : `<button class="btn-done-complete" onclick="toggleWorkoutDone('${w._id}')">Mark Done</button>`;
 
             return `
                 <tr>
