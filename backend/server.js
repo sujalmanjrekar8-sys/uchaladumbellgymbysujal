@@ -31,16 +31,16 @@ app.get('/login.html', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
-app.get('/owner/dashboard.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'owner/dashboard.html'));
+app.get(['/owner/dashboard.html', '/owner/owner-dashboard.html', '/owner/dashboard', '/owner'], (req, res) => {
+  res.sendFile(path.join(frontendPath, 'owner/owner-dashboard.html'));
 });
 
-app.get('/trainer/dashboard.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'trainer/dashboard.html'));
+app.get(['/trainer/dashboard.html', '/trainer/trainer-dashboard.html', '/trainer/dashboard', '/trainer'], (req, res) => {
+  res.sendFile(path.join(frontendPath, 'trainer/trainer-dashboard.html'));
 });
 
-app.get('/member/dashboard.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'member/dashboard.html'));
+app.get(['/member/dashboard.html', '/member/member-dashboard.html', '/member/dashboard', '/member'], (req, res) => {
+  res.sendFile(path.join(frontendPath, 'member/member-dashboard.html'));
 });
 
 // Import API Routes

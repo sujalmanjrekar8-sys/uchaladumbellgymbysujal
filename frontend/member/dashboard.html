@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Portal - Uchala Dumbell Gym</title>
+    <link rel="stylesheet" href="member.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>MEMBER PORTAL</h2>
+            <p id="memberCustomId">UDGMEM-1001</p>
+        </div>
+        
+        <nav class="sidebar-menu">
+            <button type="button" class="nav-tab active" onclick="switchSection('workout')">Today's Workout</button>
+            <button type="button" class="nav-tab" onclick="switchSection('diet')">My Diet Plan</button>
+            <button type="button" class="nav-tab" onclick="switchSection('membership')">My Membership & Invoices</button>
+            <button type="button" class="nav-tab" onclick="switchSection('attendance')">My Attendance</button>
+            <button type="button" class="nav-logout" onclick="logout()">Logout</button>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- TOP PROFILE BAR -->
+        <div class="top-bar">
+            <div>
+                <h2 id="memberWelcomeTitle" style="font-size: 18px;">Welcome Back, Member!</h2>
+                <p id="memberCoachSubtitle" style="color: #f39c12; font-size: 13px; margin-top: 2px;">Assigned Coach: Alex Mercer</p>
+            </div>
+            <div class="profile-actions">
+                <div style="text-align: right; margin-right: 15px;">
+                    <strong id="memberNameDisplay">John Doe</strong>
+                    <div id="memberIdBadge" style="font-size: 11px; color: #94a3b8;">UDGMEM-1001</div>
+                </div>
+                <button type="button" onclick="openModal('changePasswordModal')" class="btn-sm">Change Password</button>
+            </div>
+        </div>
+
+        <!-- SECTION 1: TODAY'S WORKOUT -->
+        <section id="section-workout" class="content-section">
+            <div class="page-title">
+                <h1>Today's Workout Routine</h1>
+                <p id="workoutDaySubtitle">Today's Assigned Exercises</p>
+            </div>
+
+            <!-- COACH NOTES BANNER -->
+            <div class="coach-notes-box">
+                <h3>Coach Instructions:</h3>
+                <p id="coachNotesText">"Keep good form on all presses. Stay hydrated!"</p>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Sets</th>
+                            <th>Reps</th>
+                            <th>Target Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todayWorkoutTableBody">
+                        <tr><td colspan="4" style="text-align:center; color:#777;">Loading today's exercises...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 2: MY DIET PLAN -->
+        <section id="section-diet" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>My Personalized Diet Plan</h1>
+                <p id="dietGoalSubtitle">Goal Target: Lean Bulking</p>
+            </div>
+
+            <div class="diet-grid">
+                <div class="diet-card">
+                    <h3>Breakfast</h3>
+                    <p id="dietBreakfastText" class="meal-content">Loading...</p>
+                </div>
+                <div class="diet-card">
+                    <h3>Lunch</h3>
+                    <p id="dietLunchText" class="meal-content">Loading...</p>
+                </div>
+                <div class="diet-card">
+                    <h3>Pre-Workout Snack</h3>
+                    <p id="dietPreWorkoutText" class="meal-content">Loading...</p>
+                </div>
+                <div class="diet-card">
+                    <h3>Dinner</h3>
+                    <p id="dietDinnerText" class="meal-content">Loading...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: MEMBERSHIP & INVOICES -->
+        <section id="section-membership" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>My Membership & Invoices</h1>
+                <p>Plan details and billing invoices</p>
+            </div>
+
+            <!-- ACTIVE PLAN SUMMARY CARD -->
+            <div class="membership-card">
+                <div>
+                    <h2 id="myPlanTitle">Starter Plan</h2>
+                    <p id="myPlanPerks" style="color: #94a3b8; font-size: 13px; margin: 6px 0;">Full Gym Access, Free Locker & Shower</p>
+                    <span class="badge-active" id="myPlanStatusBadge">Active Membership</span>
+                </div>
+                <div style="text-align: right;">
+                    <div class="plan-cost" id="myPlanPriceDisplay">₹1,200</div>
+                    <span id="myPlanDueDisplay" style="font-size: 12px; color: #2ecc71;">Fully Cleared</span>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Payment Invoices</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Plan</th>
+                            <th>Paid (₹)</th>
+                            <th>Due (₹)</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberInvoicesTableBody">
+                        <tr><td colspan="6" style="text-align:center; color:#777;">Loading invoice history...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: MY ATTENDANCE -->
+        <section id="section-attendance" class="content-section" style="display: none;">
+            <div class="page-title">
+                <h1>My Gym Attendance Log</h1>
+                <p>History of your gym visits and workouts</p>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Check-In Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberAttendanceTableBody">
+                        <tr><td colspan="3" style="text-align:center; color:#777;">Loading attendance records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MODAL: CHANGE MY PASSWORD -->
+    <div id="changePasswordModal" class="modal-bg" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Change My Password</h3>
+                <span onclick="closeModal('changePasswordModal')" class="close-btn">&times;</span>
+            </div>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Current Password *</label>
+                    <input type="password" id="memberOldPass" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>New Password (min 4 characters) *</label>
+                    <input type="password" id="memberNewPass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="member.js"></script>
+</body>
+</html>
