@@ -134,14 +134,25 @@ const getTraineeDiet = async (req, res) => {
 
 const assignOrUpdateDiet = async (req, res) => {
   try {
-    const { memberId, dietType, dailyGoal, meals, notes } = req.body;
+    const { memberId, dietType, dailyGoal, goal, meals, breakfast, lunch, preWorkout, dinner, notes } = req.body;
+
+    const formattedGoal = dailyGoal || goal || 'General Fitness & Muscle Building';
+    
+    let formattedMeals = meals;
+    if (!formattedMeals || !Array.isArray(formattedMeals) || formattedMeals.length === 0) {
+      formattedMeals = [];
+      if (breakfast) formattedMeals.push({ mealTime: 'Breakfast', items: breakfast, calories: 500, proteinGrams: 30 });
+      if (lunch) formattedMeals.push({ mealTime: 'Lunch', items: lunch, calories: 700, proteinGrams: 40 });
+      if (preWorkout) formattedMeals.push({ mealTime: 'Pre-Workout', items: preWorkout, calories: 300, proteinGrams: 15 });
+      if (dinner) formattedMeals.push({ mealTime: 'Dinner', items: dinner, calories: 600, proteinGrams: 35 });
+    }
 
     let diet = await Diet.findOne({ member: memberId });
 
     if (diet) {
       diet.dietType = dietType || diet.dietType;
-      diet.dailyGoal = dailyGoal || diet.dailyGoal;
-      diet.meals = meals || diet.meals;
+      diet.dailyGoal = formattedGoal;
+      diet.meals = formattedMeals;
       diet.notes = notes || diet.notes;
       diet.trainer = req.user._id;
       await diet.save();
@@ -152,8 +163,8 @@ const assignOrUpdateDiet = async (req, res) => {
       member: memberId,
       trainer: req.user._id,
       dietType: dietType || 'Non-Vegetarian',
-      dailyGoal: dailyGoal || 'Muscle Building & Strength',
-      meals: meals || [],
+      dailyGoal: formattedGoal,
+      meals: formattedMeals,
       notes: notes || ''
     });
 
