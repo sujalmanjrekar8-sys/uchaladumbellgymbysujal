@@ -90,41 +90,9 @@
         <h2>Membership Plans</h2>
         <p class="section-sub">Transparent pricing with zero hidden admission fees.</p>
 
-        <div class="grid-cards">
-            <div class="card plan-card">
-                <h3>Starter Plan</h3>
-                <div class="plan-price">₹1,200 <span>/ 1 Month</span></div>
-                <ul class="plan-list">
-                    <li>Full access to Free Weights & Cardio Zone</li>
-                    <li>Free Locker & Shower facilities</li>
-                    <li>General floor trainer guidance</li>
-                </ul>
-                <button type="button" onclick="openLoginModal('member')" class="btn-card">Join at Reception</button>
-            </div>
-
-            <div class="card plan-card featured-plan">
-                <span class="plan-tag">POPULAR</span>
-                <h3>Pro Plan</h3>
-                <div class="plan-price">₹3,000 <span>/ 3 Months</span></div>
-                <ul class="plan-list">
-                    <li>Everything in Starter Plan</li>
-                    <li>Custom workout split routine</li>
-                    <li>Basic nutrition & protein guidance</li>
-                    <li>Free Uchala Gym Shaker Bottle</li>
-                </ul>
-                <button type="button" onclick="openLoginModal('member')" class="btn-primary" style="width: 100%;">Join at Reception</button>
-            </div>
-
-            <div class="card plan-card">
-                <h3>Elite Plan</h3>
-                <div class="plan-price">₹9,999 <span>/ 1 Year</span></div>
-                <ul class="plan-list">
-                    <li>Unlimited 365-day full gym access</li>
-                    <li>Personalized Diet & Supplement plan</li>
-                    <li>Monthly body progress tracking</li>
-                    <li>Official Gym T-Shirt + Shaker</li>
-                </ul>
-                <button type="button" onclick="openLoginModal('member')" class="btn-card">Join at Reception</button>
+        <div class="grid-cards" id="publicPlansGrid">
+            <div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 40px;">
+                <p>Loading current membership plans from database...</p>
             </div>
         </div>
     </section>

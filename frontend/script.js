@@ -101,4 +101,55 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    // Automatically load live membership plans from database onto homepage
+    loadPublicPlans();
 });
+
+// Dynamic Membership Plans Loader
+async function loadPublicPlans() {
+    const grid = document.getElementById("publicPlansGrid");
+    if (!grid) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/plans`);
+        const data = await res.json();
+        const plans = data.plans || (Array.isArray(data) ? data : []);
+
+        if (!plans || plans.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 30px;">
+                    <h3>No plans available currently</h3>
+                    <p style="margin-top: 6px; font-size: 13px;">Please check back soon or visit the gym reception!</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = plans.map((p, index) => {
+            const isFeatured = index === 1 || p.durationInMonths === 3 || p.durationInMonths === 6;
+            const features = Array.isArray(p.features) ? p.features : (p.features ? p.features.split(',') : []);
+            
+            return `
+                <div class="card plan-card ${isFeatured ? 'featured-plan' : ''}">
+                    ${isFeatured ? '<span class="plan-tag">POPULAR</span>' : ''}
+                    <h3>${p.planName}</h3>
+                    <div class="plan-price">₹${Number(p.price).toLocaleString('en-IN')} <span>/ ${p.durationInMonths} ${p.durationInMonths === 1 ? 'Month' : 'Months'}</span></div>
+                    <ul class="plan-list">
+                        ${features.length > 0 
+                            ? features.map(f => `<li>${f.trim()}</li>`).join('') 
+                            : (p.description ? `<li>${p.description}</li>` : '<li>Full Gym Access</li><li>Locker & Shower Facilities</li>')}
+                    </ul>
+                    <button type="button" onclick="openLoginModal('member')" class="${isFeatured ? 'btn-primary' : 'btn-card'}" style="${isFeatured ? 'width: 100%;' : ''}">Join at Reception</button>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error("Error loading public plans:", err);
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 20px;">
+                <p>Unable to load membership plans. Please refresh or contact gym reception.</p>
+            </div>
+        `;
+    }
+}
