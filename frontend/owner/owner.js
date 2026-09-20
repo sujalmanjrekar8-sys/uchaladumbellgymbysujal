@@ -848,6 +848,11 @@ async function deletePlan(id, name) {
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
+// Helper to refresh stats and tables
+async function loadStats() {
+    return loadAllData();
+}
+
 // Collect Remaining Due Fee
 document.getElementById('collectDueForm').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -856,10 +861,10 @@ document.getElementById('collectDueForm').addEventListener('submit', async funct
     const paymentMode = document.getElementById('duePaymentMode').value;
     try {
         const res = await api.put(`/owner/payments/${id}/pay-due`, { amount, paymentMode });
-        alert(res.message || 'Due payment collected successfully!');
+        await customAlert(res.message || 'Due payment collected successfully!', 'Payment Received', 'success');
         closeModal('collectDueModal');
         loadAllData();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
 // Change Password (Self)
@@ -870,10 +875,10 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
             currentPassword: document.getElementById('ownerOldPass').value,
             newPassword: document.getElementById('ownerNewPass').value
         });
-        alert(res.message || 'Password updated successfully!');
+        await customAlert(res.message || 'Password updated successfully!', 'Password Changed', 'success');
         closeModal('changePasswordModal');
         this.reset();
-    } catch (err) { alert(err.message); }
+    } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
  
 // Edit Payment Form Submit
@@ -898,12 +903,11 @@ if (editPaymentFormEl) {
                 paymentDate,
                 notes
             });
-            alert(res.message || 'Payment record updated successfully!');
+            await customAlert(res.message || 'Payment record updated successfully!', 'Payment Updated', 'success');
             closeModal('editPaymentModal');
-            loadPayments();
-            loadStats();
+            loadAllData();
         } catch (err) {
-            alert(err.message || 'Failed to update payment');
+            customAlert(err.message || 'Failed to update payment', 'Error', 'error');
         }
     });
 }
@@ -932,11 +936,11 @@ if (editSalaryFormEl) {
                 status,
                 paymentDate
             });
-            alert(res.message || 'Salary voucher updated successfully!');
+            await customAlert(res.message || 'Salary voucher updated successfully!', 'Salary Voucher Updated', 'success');
             closeModal('editSalaryModal');
-            loadSalaries();
+            loadAllData();
         } catch (err) {
-            alert(err.message || 'Failed to update salary voucher');
+            customAlert(err.message || 'Failed to update salary voucher', 'Error', 'error');
         }
     });
 }
@@ -961,10 +965,10 @@ document.getElementById('editAttendanceForm').addEventListener('submit', async f
 
     try {
         const res = await api.put(`/owner/attendance/${id}`, { status });
-        alert(res.message || 'Attendance record updated!');
+        await customAlert(res.message || 'Attendance record updated!', 'Attendance Updated', 'success');
         closeModal('editAttendanceModal');
         loadAttendance();
     } catch (err) {
-        alert(err.message || 'Failed to update attendance');
+        customAlert(err.message || 'Failed to update attendance', 'Error', 'error');
     }
 });
