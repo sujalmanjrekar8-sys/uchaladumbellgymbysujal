@@ -96,18 +96,24 @@ async function loadTodayWorkout() {
         }
 
         const currentDay = workoutData.currentDay || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
-        let todayWorkout = workoutData.todayWorkout;
+        let todayList = [];
 
-        if (!todayWorkout && Array.isArray(workoutData)) {
-            todayWorkout = workoutData.find(w => (w.day || w.dayOfWeek) === currentDay) || workoutData[0];
-        } else if (!todayWorkout && workoutData.allWorkouts && workoutData.allWorkouts.length > 0) {
-            todayWorkout = workoutData.allWorkouts.find(w => (w.day || w.dayOfWeek) === currentDay) || workoutData.allWorkouts[0];
+        if (workoutData.todayWorkouts && Array.isArray(workoutData.todayWorkouts) && workoutData.todayWorkouts.length > 0) {
+            todayList = workoutData.todayWorkouts;
+        } else if (Array.isArray(workoutData)) {
+            todayList = workoutData.filter(w => (w.day || w.dayOfWeek) === currentDay);
+            if (todayList.length === 0 && workoutData.length > 0) todayList = workoutData;
+        } else if (workoutData.allWorkouts && Array.isArray(workoutData.allWorkouts)) {
+            todayList = workoutData.allWorkouts.filter(w => (w.day || w.dayOfWeek) === currentDay);
+            if (todayList.length === 0 && workoutData.todayWorkout) todayList = [workoutData.todayWorkout];
+        } else if (workoutData.todayWorkout) {
+            todayList = [workoutData.todayWorkout];
         }
 
         const statusContainer = document.getElementById("workoutStatusBadgeContainer");
         const tbody = document.getElementById("todayWorkoutTableBody");
 
-        if (!todayWorkout) {
+        if (todayList.length === 0) {
             document.getElementById("workoutDaySubtitle").textContent = `${currentDay}: Rest & Active Recovery Day`;
             document.getElementById("coachNotesText").textContent = `"Rest day or light mobility / cardio recovery."`;
             if (statusContainer) {
@@ -118,48 +124,60 @@ async function loadTodayWorkout() {
         }
 
         // Set routine details
-        const routineTitle = todayWorkout.workoutTitle || todayWorkout.title || todayWorkout.category || 'General Routine';
-        const dayLabel = todayWorkout.day || todayWorkout.dayOfWeek || currentDay;
-        document.getElementById("workoutDaySubtitle").textContent = `${dayLabel}'s Split: ${routineTitle}`;
+        const titles = todayList.map(w => w.workoutTitle || w.title || w.category || 'General Routine').filter(Boolean);
+        const dayLabel = todayList[0].day || todayList[0].dayOfWeek || currentDay;
+        document.getElementById("workoutDaySubtitle").textContent = `${dayLabel}'s Split: ${titles.join(' + ')}`;
 
         // Set Coach Notes
-        if (todayWorkout.notes) {
-            document.getElementById("coachNotesText").textContent = `"${todayWorkout.notes}"`;
+        const notesList = todayList.map(w => w.notes).filter(Boolean);
+        if (notesList.length > 0) {
+            document.getElementById("coachNotesText").textContent = `"${notesList.join(' | ')}"`;
         } else {
             document.getElementById("coachNotesText").textContent = `"Keep strict form on all sets and stay hydrated!"`;
         }
 
         // Set Live Status Badge
-        const isCompleted = todayWorkout.isCompleted === true;
+        const allCompleted = todayList.every(w => w.isCompleted === true);
         if (statusContainer) {
-            statusContainer.innerHTML = isCompleted
+            statusContainer.innerHTML = allCompleted
                 ? `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">Completed (Marked by Coach)</span>`
                 : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today</span>`;
         }
 
-        // Populate Exercises Table
-        const exercises = todayWorkout.exercises || [];
-        if (exercises.length > 0) {
-            tbody.innerHTML = exercises.map(e => `
-                <tr>
-                    <td><strong style="color:#f39c12;">${e.name}</strong></td>
-                    <td>${e.sets || 4} sets</td>
-                    <td>${e.reps || 10} reps</td>
-                    <td>${e.weight ? `${e.weight}` : '-'}</td>
-                </tr>
-            `).join("");
-        } else if (todayWorkout.exercise) {
-            tbody.innerHTML = `
-                <tr>
-                    <td><strong style="color:#f39c12;">${todayWorkout.exercise}</strong></td>
-                    <td>${todayWorkout.sets || 4} sets</td>
-                    <td>${todayWorkout.reps || todayWorkout.setsReps || 10} reps</td>
-                    <td>${todayWorkout.weight ? `${todayWorkout.weight} kg` : '-'}</td>
-                </tr>
-            `;
-        } else {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No individual exercises detailed. Follow coach instructions.</td></tr>`;
+        // Populate All Exercises Table
+        let rowsHtml = '';
+        todayList.forEach((w, idx) => {
+            const rTitle = w.workoutTitle || w.title || w.category || `Routine #${idx + 1}`;
+            if (todayList.length > 1) {
+                rowsHtml += `<tr style="background: rgba(243, 156, 18, 0.08);"><td colspan="4" style="color: #f39c12; font-weight: bold; font-size: 13px;">${rTitle} (${w.isCompleted ? 'Completed' : 'Pending'})</td></tr>`;
+            }
+
+            if (w.exercises && Array.isArray(w.exercises) && w.exercises.length > 0) {
+                rowsHtml += w.exercises.map(e => `
+                    <tr>
+                        <td><strong style="color:#f39c12;">${e.name}</strong></td>
+                        <td>${e.sets || 4} sets</td>
+                        <td>${e.reps || 10} reps</td>
+                        <td>${e.weight ? `${e.weight}` : '-'}</td>
+                    </tr>
+                `).join('');
+            } else if (w.exercise) {
+                rowsHtml += `
+                    <tr>
+                        <td><strong style="color:#f39c12;">${w.exercise}</strong></td>
+                        <td>${w.sets || 4} sets</td>
+                        <td>${w.reps || w.setsReps || 10} reps</td>
+                        <td>${w.weight ? `${w.weight} kg` : '-'}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (!rowsHtml) {
+            rowsHtml = `<tr><td colspan="4" style="text-align:center; color:#777;">No individual exercises detailed. Follow coach instructions.</td></tr>`;
         }
+
+        tbody.innerHTML = rowsHtml;
 
     } catch (err) {
         console.error("Member workout error:", err);

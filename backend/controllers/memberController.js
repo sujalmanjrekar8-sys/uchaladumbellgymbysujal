@@ -13,8 +13,8 @@ const getTodayWorkout = async (req, res) => {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDay = daysOfWeek[new Date().getDay()];
 
-    // Find workout specifically for today
-    let todayWorkout = await Workout.findOne({
+    // Find all workouts specifically for today
+    const todayWorkouts = await Workout.find({
       member: req.user._id,
       day: currentDay
     }).populate('trainer', 'name gymId specialization');
@@ -27,7 +27,8 @@ const getTodayWorkout = async (req, res) => {
     res.status(200).json({
       success: true,
       currentDay,
-      todayWorkout,
+      todayWorkout: todayWorkouts[0] || null,
+      todayWorkouts,
       allWorkouts
     });
   } catch (error) {
