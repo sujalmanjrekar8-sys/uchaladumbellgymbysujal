@@ -25,7 +25,7 @@ const dietSchema = new mongoose.Schema(
     },
     dietType: {
       type: String,
-      enum: ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Custom'],
+      enum: ['Vegetarian', 'Non-Vegetarian', 'Eggitarian', 'Vegan', 'Keto', 'High-Protein', 'Custom'],
       default: 'Non-Vegetarian'
     },
     dailyGoal: {
