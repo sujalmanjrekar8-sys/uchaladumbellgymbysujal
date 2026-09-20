@@ -329,17 +329,19 @@ async function loadSalarySlips() {
         }
 
         tbody.innerHTML = slips.map(s => {
-            const voucherNum = s.voucherNo 
-                ? (s.voucherNo.startsWith("SAL-") ? s.voucherNo : `SAL-UDG-${s.voucherNo}`) 
-                : `SAL-UDG-${s._id ? s._id.slice(-4).toUpperCase() : '1001'}`;
+            const voucherNum = s.receiptNumber 
+                ? (s.receiptNumber.startsWith("SAL-") ? s.receiptNumber : `SAL-UDG-${s.receiptNumber}`)
+                : (s.voucherNo 
+                    ? (s.voucherNo.startsWith("SAL-") ? s.voucherNo : `SAL-UDG-${s.voucherNo}`)
+                    : `SAL-UDG-${s._id ? s._id.slice(-4).toUpperCase() : '1001'}`);
 
             const base = s.baseSalary || 0;
-            const bonus = s.bonus || 0;
+            const bonus = s.bonuses || s.bonus || 0;
             const deductions = s.deductions || 0;
-            const net = (base + bonus) - deductions;
+            const net = s.netSalary !== undefined ? s.netSalary : ((base + bonus) - deductions);
 
-            const formattedDate = s.createdAt || s.paymentDate || s.date
-                ? new Date(s.createdAt || s.paymentDate || s.date).toLocaleDateString("en-IN")
+            const formattedDate = s.paymentDate || s.createdAt || s.date
+                ? new Date(s.paymentDate || s.createdAt || s.date).toLocaleDateString("en-IN")
                 : '-';
 
             return `

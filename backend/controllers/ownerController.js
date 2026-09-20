@@ -469,6 +469,7 @@ const createSalarySlip = async (req, res) => {
       paymentMode: paymentMode || 'Bank Transfer',
       status: status || 'Paid',
       receiptNumber,
+      voucherNo: receiptNumber,
       notes: notes || ''
     });
 
