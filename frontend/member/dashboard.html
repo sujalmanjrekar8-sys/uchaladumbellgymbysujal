@@ -44,9 +44,14 @@
 
         <!-- SECTION 1: TODAY'S WORKOUT -->
         <section id="section-workout" class="content-section">
-            <div class="page-title">
-                <h1>Today's Workout Routine</h1>
-                <p id="workoutDaySubtitle">Today's Assigned Exercises</p>
+            <div class="page-title flex-between" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h1>Today's Workout Routine</h1>
+                    <p id="workoutDaySubtitle">Today's Assigned Exercises</p>
+                </div>
+                <div id="workoutStatusBadgeContainer">
+                    <span class="badge-due" id="workoutStatusBadge" style="padding: 6px 14px; font-size: 13px;">Pending Today ⏳</span>
+                </div>
             </div>
 
             <!-- COACH NOTES BANNER -->
@@ -79,7 +84,7 @@
                 <p id="dietGoalSubtitle">Goal Target: Lean Bulking</p>
             </div>
 
-            <div class="diet-grid">
+            <div class="diet-grid" id="dietGridContainer">
                 <div class="diet-card">
                     <h3>Breakfast</h3>
                     <p id="dietBreakfastText" class="meal-content">Loading...</p>
@@ -111,7 +116,10 @@
                 <div>
                     <h2 id="myPlanTitle">Starter Plan</h2>
                     <p id="myPlanPerks" style="color: #94a3b8; font-size: 13px; margin: 6px 0;">Full Gym Access, Free Locker & Shower</p>
-                    <span class="badge-active" id="myPlanStatusBadge">Active Membership</span>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                        <span class="badge-active" id="myPlanStatusBadge">Active Membership</span>
+                        <span id="myPlanValidityText" style="font-size: 12px; color: #a0aec0;">Valid until --</span>
+                    </div>
                 </div>
                 <div style="text-align: right;">
                     <div class="plan-cost" id="myPlanPriceDisplay">₹1,200</div>
@@ -189,6 +197,6 @@
         </div>
     </div>
 
-    <script src="member.js"></script>
+    <script src="member.js?v=4"></script>
 </body>
 </html>

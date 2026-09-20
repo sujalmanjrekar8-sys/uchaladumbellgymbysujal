@@ -26,11 +26,13 @@ async function fetchAuth(endpoint, options = {}) {
 
 // Modal Helpers
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = "flex";
+    const m = document.getElementById(modalId);
+    if (m) m.style.display = "flex";
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = "none";
+    const m = document.getElementById(modalId);
+    if (m) m.style.display = "none";
 }
 
 window.addEventListener("click", function (e) {
@@ -69,7 +71,7 @@ function logout() {
 
 // ==================== DATA LOADERS ====================
 
-// 1. Load Profile & Workout
+// 1. Load Profile & Today's Workout
 async function loadTodayWorkout() {
     document.getElementById("memberNameDisplay").textContent = currentUser.name || "Athlete";
     document.getElementById("memberCustomId").textContent = currentUser.gymId || currentUser.customId || currentUser.memberId || "UDGMEM-1001";
@@ -80,33 +82,65 @@ async function loadTodayWorkout() {
         const profile = await fetchAuth("/member/profile");
         
         if (profile.assignedTrainer) {
-            document.getElementById("memberCoachSubtitle").textContent = `Assigned Coach: ${profile.assignedTrainer.name} (${profile.assignedTrainer.specialization || 'Fitness Coach'})`;
+            document.getElementById("memberCoachSubtitle").textContent = `Assigned Coach: ${profile.assignedTrainer.name} (${profile.assignedTrainer.specialization || 'Strength Coach'})`;
         } else {
             document.getElementById("memberCoachSubtitle").textContent = `Floor Coach On Duty`;
         }
 
-        const workouts = await fetchAuth("/member/workouts");
+        // Fetch today's workout split
+        let workoutData = null;
+        try {
+            workoutData = await fetchAuth("/member/today-workout");
+        } catch (e) {
+            workoutData = await fetchAuth("/member/workouts");
+        }
+
+        const currentDay = workoutData.currentDay || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+        let todayWorkout = workoutData.todayWorkout;
+
+        if (!todayWorkout && Array.isArray(workoutData)) {
+            todayWorkout = workoutData.find(w => (w.day || w.dayOfWeek) === currentDay) || workoutData[0];
+        } else if (!todayWorkout && workoutData.allWorkouts && workoutData.allWorkouts.length > 0) {
+            todayWorkout = workoutData.allWorkouts.find(w => (w.day || w.dayOfWeek) === currentDay) || workoutData.allWorkouts[0];
+        }
+
+        const statusContainer = document.getElementById("workoutStatusBadgeContainer");
         const tbody = document.getElementById("todayWorkoutTableBody");
 
-        if (!workouts || workouts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No workouts assigned for today yet. Ask your coach!</td></tr>`;
-            document.getElementById("coachNotesText").textContent = `"Rest day or light cardio recovery."`;
+        if (!todayWorkout) {
+            document.getElementById("workoutDaySubtitle").textContent = `${currentDay}: Rest & Active Recovery Day`;
+            document.getElementById("coachNotesText").textContent = `"Rest day or light mobility / cardio recovery."`;
+            if (statusContainer) {
+                statusContainer.innerHTML = `<span class="badge-active" style="padding: 6px 14px; font-size: 13px; background: rgba(59, 130, 246, 0.15); color: #60a5fa;">Rest Day 🛌</span>`;
+            }
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No specific workout split scheduled for ${currentDay}. Check with your coach!</td></tr>`;
             return;
         }
 
-        const latest = workouts[0];
-        if (latest.notes) {
-            document.getElementById("coachNotesText").textContent = `"${latest.notes}"`;
+        // Set routine details
+        const routineTitle = todayWorkout.workoutTitle || todayWorkout.title || todayWorkout.category || 'General Routine';
+        const dayLabel = todayWorkout.day || todayWorkout.dayOfWeek || currentDay;
+        document.getElementById("workoutDaySubtitle").textContent = `${dayLabel}'s Split: ${routineTitle}`;
+
+        // Set Coach Notes
+        if (todayWorkout.notes) {
+            document.getElementById("coachNotesText").textContent = `"${todayWorkout.notes}"`;
         } else {
-            document.getElementById("coachNotesText").textContent = `"Keep good form on all exercises."`;
+            document.getElementById("coachNotesText").textContent = `"Keep strict form on all sets and stay hydrated!"`;
         }
 
-        if (latest.title || latest.dayOfWeek) {
-            document.getElementById("workoutDaySubtitle").textContent = `${latest.dayOfWeek || 'Today'}'s Routine: ${latest.title || 'General Workout'}`;
+        // Set Live Status Badge
+        const isCompleted = todayWorkout.isCompleted === true;
+        if (statusContainer) {
+            statusContainer.innerHTML = isCompleted
+                ? `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">Completed ✅ (Marked by Coach)</span>`
+                : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today ⏳</span>`;
         }
 
-        if (latest.exercises && latest.exercises.length > 0) {
-            tbody.innerHTML = latest.exercises.map(e => `
+        // Populate Exercises Table
+        const exercises = todayWorkout.exercises || [];
+        if (exercises.length > 0) {
+            tbody.innerHTML = exercises.map(e => `
                 <tr>
                     <td><strong style="color:#f39c12;">${e.name}</strong></td>
                     <td>${e.sets || 4} sets</td>
@@ -114,15 +148,17 @@ async function loadTodayWorkout() {
                     <td>${e.weight ? `${e.weight}` : '-'}</td>
                 </tr>
             `).join("");
-        } else {
-            tbody.innerHTML = workouts.map(w => `
+        } else if (todayWorkout.exercise) {
+            tbody.innerHTML = `
                 <tr>
-                    <td><strong style="color:#f39c12;">${w.exercise || w.title || '-'}</strong></td>
-                    <td>${w.sets || 4} sets</td>
-                    <td>${w.reps || w.setsReps || 10} reps</td>
-                    <td>${w.weight ? `${w.weight} kg` : '-'}</td>
+                    <td><strong style="color:#f39c12;">${todayWorkout.exercise}</strong></td>
+                    <td>${todayWorkout.sets || 4} sets</td>
+                    <td>${todayWorkout.reps || todayWorkout.setsReps || 10} reps</td>
+                    <td>${todayWorkout.weight ? `${todayWorkout.weight} kg` : '-'}</td>
                 </tr>
-            `).join("");
+            `;
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No individual exercises detailed. Follow coach instructions.</td></tr>`;
         }
 
     } catch (err) {
@@ -137,7 +173,9 @@ async function loadMyDiet() {
         const diet = (res && res.diet) ? res.diet : res;
         
         if (diet && (diet.dailyGoal || diet.goal || diet.title || (diet.meals && diet.meals.length > 0))) {
-            document.getElementById("dietGoalSubtitle").textContent = `Goal Target: ${diet.dailyGoal || diet.goal || diet.title || 'Personalized Nutrition'} (${diet.dietType || 'Custom Plan'})`;
+            const goalText = diet.dailyGoal || diet.goal || diet.title || 'Personalized Nutrition';
+            const typeText = diet.dietType || 'Custom Plan';
+            document.getElementById("dietGoalSubtitle").textContent = `Goal Target: ${goalText} (${typeText})`;
             
             let bText = diet.breakfast;
             let lText = diet.lunch;
@@ -150,72 +188,134 @@ async function loadMyDiet() {
                 const pMeal = diet.meals.find(m => m.mealTime === 'Pre-Workout' || m.mealTime === 'Morning Snack');
                 const dMeal = diet.meals.find(m => m.mealTime === 'Dinner' || m.mealTime === 'Post-Workout');
 
-                if (bMeal) bText = bMeal.items + (bMeal.calories ? ` (${bMeal.calories} kcal)` : '');
-                if (lMeal) lText = lMeal.items + (lMeal.calories ? ` (${lMeal.calories} kcal)` : '');
-                if (pMeal) pText = pMeal.items + (pMeal.calories ? ` (${pMeal.calories} kcal)` : '');
-                if (dMeal) dText = dMeal.items + (dMeal.calories ? ` (${dMeal.calories} kcal)` : '');
+                if (bMeal) bText = bMeal.items + (bMeal.calories ? ` <span style="color:#f39c12;">(${bMeal.calories} kcal)</span>` : '');
+                if (lMeal) lText = lMeal.items + (lMeal.calories ? ` <span style="color:#f39c12;">(${lMeal.calories} kcal)</span>` : '');
+                if (pMeal) pText = pMeal.items + (pMeal.calories ? ` <span style="color:#f39c12;">(${pMeal.calories} kcal)</span>` : '');
+                if (dMeal) dText = dMeal.items + (dMeal.calories ? ` <span style="color:#f39c12;">(${dMeal.calories} kcal)</span>` : '');
             }
 
-            document.getElementById("dietBreakfastText").textContent = bText || diet.instructions || 'Eggs / Oats / Shaker';
-            document.getElementById("dietLunchText").textContent = lText || 'Whole food lean protein + carbs + vegetables';
-            document.getElementById("dietPreWorkoutText").textContent = pText || 'Banana / Peanut butter toast + Caffeine';
-            document.getElementById("dietDinnerText").textContent = dText || 'Light protein + fiber + vegetables';
+            document.getElementById("dietBreakfastText").innerHTML = bText || '4 Whole Eggs / 100g Paneer + 60g Oats + 1 Banana';
+            document.getElementById("dietLunchText").innerHTML = lText || '150g Chicken / Soya Chunks + 100g Rice + Veggies';
+            document.getElementById("dietPreWorkoutText").innerHTML = pText || '2 Brown Bread + 1 tbsp Peanut Butter + Black Coffee';
+            document.getElementById("dietDinnerText").innerHTML = dText || '150g Fish / Paneer / Dal + 2 Chapatis + Green Salad';
         } else {
-            document.getElementById("dietGoalSubtitle").textContent = "Standard Gym Nutrition";
-            document.getElementById("dietBreakfastText").textContent = "4 Eggs / 100g Paneer + 50g Oats + 1 Banana";
-            document.getElementById("dietLunchText").textContent = "150g Chicken / Soya Chunks + 100g Rice + Green Salad";
-            document.getElementById("dietPreWorkoutText").textContent = "2 Brown Bread + 1 tbsp Peanut Butter + Black Coffee";
-            document.getElementById("dietDinnerText").textContent = "150g Fish / Paneer / Dal + 2 Chapatis + Salad";
+            document.getElementById("dietGoalSubtitle").textContent = "Standard Fitness & Muscle Building (Non-Vegetarian)";
+            document.getElementById("dietBreakfastText").innerHTML = "4 Eggs / 100g Paneer + 50g Oats + 1 Banana";
+            document.getElementById("dietLunchText").innerHTML = "150g Chicken / Soya Chunks + 100g Rice + Green Salad";
+            document.getElementById("dietPreWorkoutText").innerHTML = "2 Brown Bread + 1 tbsp Peanut Butter + Black Coffee";
+            document.getElementById("dietDinnerText").innerHTML = "150g Fish / Paneer / Dal + 2 Chapatis + Salad";
         }
-    } catch (err) {}
+    } catch (err) {
+        console.error("Member diet error:", err);
+    }
 }
 
 // 3. Load Membership & Invoices
 async function loadMembershipAndInvoices() {
     try {
-        const profile = await fetchAuth("/member/profile");
-        
-        if (profile.membershipPlan) {
-            document.getElementById("myPlanTitle").textContent = profile.membershipPlan.name;
-            document.getElementById("myPlanPerks").textContent = (profile.membershipPlan.features || []).join(", ") || "Full Gym Access & Facilities";
-            document.getElementById("myPlanPriceDisplay").textContent = `₹${profile.membershipPlan.price}`;
-        } else {
-            document.getElementById("myPlanTitle").textContent = profile.plan || "Starter Plan";
+        let planData = null;
+        try {
+            planData = await fetchAuth("/member/my-plan");
+        } catch (e) {
+            planData = { user: await fetchAuth("/member/profile"), payments: await fetchAuth("/member/payments") };
         }
 
-        if (profile.dueAmount > 0) {
-            document.getElementById("myPlanDueDisplay").textContent = `₹${profile.dueAmount} Pending Due`;
-            document.getElementById("myPlanDueDisplay").style.color = "#e74c3c";
+        const user = planData.user || {};
+        const currentPlan = user.currentPlan || {};
+        const payments = planData.payments || [];
+
+        // Display Real Active Plan Name
+        const planName = currentPlan.planName || currentPlan.name || user.plan || "Starter Transformation Plan";
+        document.getElementById("myPlanTitle").textContent = planName;
+
+        // Display Perks / Features
+        let perksText = "Full Gym Access, Free Locker & Shower Facility";
+        if (currentPlan.features && Array.isArray(currentPlan.features) && currentPlan.features.length > 0) {
+            perksText = currentPlan.features.join(" • ");
+        } else if (currentPlan.description) {
+            perksText = currentPlan.description;
+        }
+        document.getElementById("myPlanPerks").textContent = perksText;
+
+        // Display Price
+        const price = currentPlan.price !== undefined ? currentPlan.price : 1200;
+        document.getElementById("myPlanPriceDisplay").textContent = `₹${price.toLocaleString()}`;
+
+        // Display Plan Validity & Status
+        const statusBadge = document.getElementById("myPlanStatusBadge");
+        const validityText = document.getElementById("myPlanValidityText");
+        const dueDisplay = document.getElementById("myPlanDueDisplay");
+
+        if (user.planEndDate) {
+            const endDate = new Date(user.planEndDate);
+            const isExpired = user.daysRemaining !== null && user.daysRemaining <= 0;
+
+            if (isExpired) {
+                statusBadge.textContent = "Membership Expired";
+                statusBadge.className = "badge-due";
+                validityText.textContent = `Expired on ${endDate.toLocaleDateString("en-IN")}`;
+            } else {
+                statusBadge.textContent = "Active Membership";
+                statusBadge.className = "badge-active";
+                validityText.textContent = `Valid until ${endDate.toLocaleDateString("en-IN")} (${user.daysRemaining || 0} days remaining)`;
+            }
         } else {
-            document.getElementById("myPlanDueDisplay").textContent = "Fully Cleared";
-            document.getElementById("myPlanDueDisplay").style.color = "#2ecc71";
+            statusBadge.textContent = "Active Member";
+            statusBadge.className = "badge-active";
+            validityText.textContent = "Valid & Standing";
         }
 
-        const invoices = await fetchAuth("/member/payments");
+        // Check payments for outstanding dues
+        const totalDue = payments.reduce((acc, p) => acc + (p.dueAmount || p.amountDue || 0), 0);
+        if (totalDue > 0) {
+            dueDisplay.textContent = `₹${totalDue.toLocaleString()} Pending Due`;
+            dueDisplay.style.color = "#ef4444";
+        } else {
+            dueDisplay.textContent = "Fully Cleared";
+            dueDisplay.style.color = "#2ecc71";
+        }
+
+        // Populate Invoices Table
         const tbody = document.getElementById("memberInvoicesTableBody");
-
-        if (!invoices || invoices.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">No invoices issued yet</td></tr>`;
+        if (!payments || payments.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">No payment invoices issued yet</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = invoices.map(p => `
-            <tr>
-                <td><strong>${p.invoiceNo || p._id.slice(-6).toUpperCase()}</strong></td>
-                <td>${p.plan ? p.plan.name : (p.planName || 'Starter Plan')}</td>
-                <td>₹${p.amountPaid}</td>
-                <td>${p.amountDue > 0 ? `<span style="color:#e74c3c; font-weight:bold;">₹${p.amountDue}</span>` : '₹0'}</td>
-                <td>${new Date(p.createdAt || Date.now()).toLocaleDateString()}</td>
-                <td>${p.amountDue > 0 ? `<span class="badge-due">Due</span>` : `<span class="badge-active">Paid</span>`}</td>
-            </tr>
-        `).join("");
-    } catch (err) {}
+        tbody.innerHTML = payments.map(p => {
+            const invoiceNo = p.invoiceNumber || p.invoiceNo || (p._id ? `INV-UDG-${p._id.slice(-4).toUpperCase()}` : 'INV-UDG-1001');
+            const pPlanName = p.membershipPlan ? p.membershipPlan.planName : (p.planName || planName);
+            const paid = p.paidAmount !== undefined ? p.paidAmount : (p.amountPaid || 0);
+            const due = p.dueAmount !== undefined ? p.dueAmount : (p.amountDue || 0);
+            const dateStr = p.paymentDate || p.createdAt || p.date
+                ? new Date(p.paymentDate || p.createdAt || p.date).toLocaleDateString("en-IN")
+                : '-';
+
+            const status = p.status || (due === 0 ? 'Paid' : 'Due');
+            const isPaid = status === 'Paid';
+
+            return `
+                <tr>
+                    <td><strong>${invoiceNo}</strong></td>
+                    <td>${pPlanName}</td>
+                    <td>₹${paid.toLocaleString()}</td>
+                    <td>${due > 0 ? `<strong style="color:#ef4444;">₹${due.toLocaleString()}</strong>` : '₹0'}</td>
+                    <td>${dateStr}</td>
+                    <td><span class="${isPaid ? 'badge-active' : 'badge-due'}">${status}</span></td>
+                </tr>
+            `;
+        }).join("");
+
+    } catch (err) {
+        console.error("Membership error:", err);
+    }
 }
 
-// 4. Load Attendance
+// 4. Load My Attendance
 async function loadMyAttendance() {
     try {
-        const history = await fetchAuth("/member/my-attendance");
+        const data = await fetchAuth("/member/attendance");
+        const history = Array.isArray(data) ? data : (data.attendance || []);
         const tbody = document.getElementById("memberAttendanceTableBody");
 
         if (!history || history.length === 0) {
@@ -223,17 +323,23 @@ async function loadMyAttendance() {
             return;
         }
 
-        tbody.innerHTML = history.map(a => `
-            <tr>
-                <td>${a.date || '-'}</td>
-                <td>${a.inTime || 'Present'}</td>
-                <td><span class="badge-active">${a.status}</span></td>
-            </tr>
-        `).join("");
-    } catch (err) {}
+        tbody.innerHTML = history.map(a => {
+            const formattedDate = a.date ? new Date(a.date).toLocaleDateString("en-IN") : '-';
+            const isPresent = a.status === 'Present';
+            return `
+                <tr>
+                    <td>${formattedDate}</td>
+                    <td>${a.inTime || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Checked In')}</td>
+                    <td><span class="${isPresent ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
+                </tr>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Attendance error:", err);
+    }
 }
 
-// Change Password
+// Change Password Handler
 document.getElementById("changePasswordForm").addEventListener("submit", async function (e) {
     e.preventDefault();
     const currentPassword = document.getElementById("memberOldPass").value;
