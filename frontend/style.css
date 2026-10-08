@@ -466,3 +466,116 @@ footer p {
     font-size: 12px;
     color: #475569;
 }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (TABLETS & MOBILE DEVICES)
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .navbar {
+        padding: 14px 20px;
+    }
+    .hero {
+        padding: 70px 20px;
+    }
+    .hero h1 {
+        font-size: 34px;
+    }
+    .grid-cards {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 14px;
+        padding: 14px 16px;
+        position: relative;
+    }
+    .nav-brand {
+        width: 100%;
+        justify-content: center;
+    }
+    .nav-brand h2 {
+        font-size: 18px;
+    }
+    .nav-links {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    .nav-links a {
+        font-size: 13px;
+    }
+    .btn-portal {
+        padding: 7px 14px;
+        font-size: 13px;
+    }
+    .hero {
+        padding: 50px 16px;
+    }
+    .hero h1 {
+        font-size: 28px;
+        line-height: 1.25;
+    }
+    .hero p {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    .hero-cta {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+        gap: 12px;
+    }
+    .btn-primary, .btn-outline {
+        width: 100%;
+        text-align: center;
+        padding: 12px 18px;
+    }
+    .section {
+        padding: 50px 16px;
+    }
+    .section h2 {
+        font-size: 24px;
+    }
+    .grid-cards {
+        grid-template-columns: 1fr;
+    }
+    .modal-card {
+        width: 92%;
+        max-width: 440px;
+        margin: 20px auto;
+        padding: 22px 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-brand h2 {
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+    .logo-img {
+        height: 32px;
+    }
+    .nav-links {
+        gap: 8px 10px;
+    }
+    .hero h1 {
+        font-size: 24px;
+    }
+    .hero-tag {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+    .card {
+        padding: 22px 18px;
+    }
+    .card-highlight {
+        font-size: 18px;
+    }
+}
