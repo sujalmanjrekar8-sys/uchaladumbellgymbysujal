@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trainer Portal - Uchala Dumbell Gym</title>
-    <link rel="stylesheet" href="trainer.css">
+    <link rel="stylesheet" href="trainer.css?v=5">
 </head>
 <body class="dashboard-body">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h2>TRAINER PORTAL</h2>
-            <p id="trainerSpecializationText">Strength & Conditioning Coach</p>
+            <div>
+                <h2>TRAINER PORTAL</h2>
+                <p id="trainerSpecializationText">Strength & Conditioning Coach</p>
+            </div>
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">☰ Menu</button>
         </div>
         
-        <nav class="sidebar-menu">
+        <nav class="sidebar-menu" id="sidebarMenu">
             <button type="button" class="nav-tab active" onclick="switchSection('trainees')">My Trainees</button>
             <button type="button" class="nav-tab" onclick="switchSection('workouts')">Workout Schedules</button>
             <button type="button" class="nav-tab" onclick="switchSection('diets')">Diet & Nutrition</button>
@@ -393,7 +396,7 @@
         </div>
     </div>
 
-    <script src="../custom-dialog.js?v=4"></script>
-    <script src="trainer.js?v=4"></script>
+    <script src="../custom-dialog.js?v=5"></script>
+    <script src="trainer.js?v=5"></script>
 </body>
 </html>

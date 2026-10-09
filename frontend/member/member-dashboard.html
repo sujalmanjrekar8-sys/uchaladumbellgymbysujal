@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Portal - Uchala Dumbell Gym</title>
-    <link rel="stylesheet" href="member.css">
+    <link rel="stylesheet" href="member.css?v=5">
 </head>
 <body class="dashboard-body">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h2>MEMBER PORTAL</h2>
-            <p id="memberCustomId">UDGMEM-1001</p>
+            <div>
+                <h2>MEMBER PORTAL</h2>
+                <p id="memberCustomId">UDGMEM-1001</p>
+            </div>
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">☰ Menu</button>
         </div>
         
-        <nav class="sidebar-menu">
+        <nav class="sidebar-menu" id="sidebarMenu">
             <button type="button" class="nav-tab active" onclick="switchSection('workout')">Today's Workout</button>
             <button type="button" class="nav-tab" onclick="switchSection('diet')">My Diet Plan</button>
             <button type="button" class="nav-tab" onclick="switchSection('membership')">My Membership & Invoices</button>
@@ -44,7 +47,7 @@
 
         <!-- SECTION 1: TODAY'S WORKOUT -->
         <section id="section-workout" class="content-section">
-            <div class="page-title flex-between" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="page-title flex-between">
                 <div>
                     <h1>Today's Workout Routine</h1>
                     <p id="workoutDaySubtitle">Today's Assigned Exercises</p>
@@ -55,7 +58,7 @@
             </div>
 
             <!-- WEEKLY DAY SELECTOR -->
-            <div class="day-selector-bar" style="display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;">
+            <div class="day-selector-bar">
                 <button type="button" class="day-pill" data-day="Monday" onclick="selectWorkoutDay('Monday')">Monday</button>
                 <button type="button" class="day-pill" data-day="Tuesday" onclick="selectWorkoutDay('Tuesday')">Tuesday</button>
                 <button type="button" class="day-pill" data-day="Wednesday" onclick="selectWorkoutDay('Wednesday')">Wednesday</button>
@@ -208,7 +211,7 @@
         </div>
     </div>
 
-    <script src="../custom-dialog.js?v=4"></script>
-    <script src="member.js?v=4"></script>
+    <script src="../custom-dialog.js?v=5"></script>
+    <script src="member.js?v=5"></script>
 </body>
 </html>

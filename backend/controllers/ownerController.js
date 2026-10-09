@@ -310,6 +310,21 @@ const assignPlanToMember = async (req, res) => {
 
     await member.save();
 
+    // Create an initial invoice with pending due balance for this assigned plan
+    const invoiceCount = await Payment.countDocuments();
+    const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
+    await Payment.create({
+      invoiceNumber,
+      member: member._id,
+      membershipPlan: plan._id,
+      totalAmount: plan.price,
+      paidAmount: 0,
+      dueAmount: plan.price,
+      paymentMode: 'Cash',
+      status: 'Pending',
+      notes: `Plan assigned on ${start.toLocaleDateString()}`
+    });
+
     res.status(200).json({
       success: true,
       message: `Plan '${plan.planName}' assigned to ${member.name}. Valid until ${end.toLocaleDateString()}`,
@@ -662,7 +677,7 @@ const payDuePayment = async (req, res) => {
     const additionalPay = Number(amount) || 0;
     payment.paidAmount += additionalPay;
     payment.dueAmount = Math.max(0, payment.totalAmount - payment.paidAmount);
-    payment.status = payment.dueAmount === 0 ? 'Paid' : 'Pending';
+    payment.status = payment.dueAmount === 0 ? 'Paid' : (payment.paidAmount > 0 ? 'Partial' : 'Pending');
     if (paymentMode) payment.paymentMode = paymentMode;
 
     await payment.save();

@@ -1,4 +1,4 @@
-const API_BASE = "/api";
+const API_BASE = (window.location.port === "5000" && window.location.protocol.startsWith("http")) ? "/api" : "http://localhost:5000/api";
 
 // 1. API Helper (Matches Product 2 methods: get, post, put, delete)
 const api = {
@@ -64,11 +64,40 @@ window.addEventListener('click', function (e) {
     }
 });
 
+// Mobile Sidebar Toggle
+function toggleMobileSidebar() {
+    const menu = document.getElementById('sidebarMenu');
+    const btn = document.getElementById('sidebarToggleBtn');
+    if (!menu) return;
+    const isOpen = menu.classList.toggle('open');
+    if (btn) {
+        btn.innerHTML = isOpen ? '✕ Close' : '☰ Menu';
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const menu = document.getElementById('sidebarMenu');
+    const btn = document.getElementById('sidebarToggleBtn');
+    if (menu && menu.classList.contains('open') && sidebar && !sidebar.contains(e.target)) {
+        menu.classList.remove('open');
+        if (btn) btn.innerHTML = '☰ Menu';
+    }
+});
+
 // Section Switcher
 function switchSection(tabId) {
     document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
     
+    // Auto-close mobile sidebar if open
+    const menu = document.getElementById('sidebarMenu');
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    if (menu && menu.classList.contains('open')) {
+        menu.classList.remove('open');
+        if (toggleBtn) toggleBtn.innerHTML = '☰ Menu';
+    }
+
     const target = document.getElementById(`section-${tabId}`);
     if (target) target.style.display = 'block';
 
@@ -141,9 +170,9 @@ async function loadAllData() {
         globalPlans = planRes.plans || planRes.data || (Array.isArray(planRes) ? planRes : []);
         renderPlans();
 
+        await loadPayments();
         populateDropdowns();
         loadAttendance();
-        loadPayments();
         loadSalaries();
         loadWorkouts();
         loadDiets();
@@ -285,12 +314,7 @@ function populateDropdowns() {
 
     const feePlan = document.getElementById('feePlanSelect');
     if (feePlan) {
-        feePlan.addEventListener('change', () => {
-            const selected = feePlan.options[feePlan.selectedIndex];
-            const price = selected.getAttribute('data-price') || 0;
-            document.getElementById('feeTotalCost').value = price;
-            document.getElementById('feeAmountPaid').value = price;
-        });
+        feePlan.addEventListener('change', onFeePlanChange);
     }
 
     const startDateInput = document.getElementById('assignPlanStartDate');
@@ -299,6 +323,7 @@ function populateDropdowns() {
     const directStartDateInput = document.getElementById('directPlanStartDate');
     if (directStartDateInput) directStartDateInput.value = new Date().toISOString().split('T')[0];
 
+    populateDueFeeDropdown();
     onAttRoleChange();
 }
 
@@ -392,6 +417,7 @@ async function loadPayments() {
                 </td>
             </tr>
         `).join('') : `<tr><td colspan="9" style="text-align:center; color:#777;">No customer payments yet</td></tr>`;
+        populateDueFeeDropdown();
     } catch (err) {}
 }
 
@@ -425,12 +451,169 @@ async function deletePaymentRecord(id, inv) {
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
+function switchFeeTab(tab) {
+    const dueBtn = document.getElementById('tabDueFeeBtn');
+    const newBtn = document.getElementById('tabNewFeeBtn');
+    const dueContent = document.getElementById('tabDueFeeContent');
+    const newContent = document.getElementById('tabNewFeeContent');
+    const title = document.getElementById('feeModalTitle');
+
+    if (tab === 'due') {
+        if (dueBtn) {
+            dueBtn.style.background = '#f39c12';
+            dueBtn.style.color = '#0b0d13';
+            dueBtn.style.fontWeight = 'bold';
+        }
+        if (newBtn) {
+            newBtn.style.background = 'transparent';
+            newBtn.style.color = '#a0aec0';
+            newBtn.style.fontWeight = '600';
+        }
+        if (dueContent) dueContent.style.display = 'block';
+        if (newContent) newContent.style.display = 'none';
+        if (title) title.innerText = 'Collect Customer Fee Payment';
+        populateDueFeeDropdown();
+    } else {
+        if (newBtn) {
+            newBtn.style.background = '#f39c12';
+            newBtn.style.color = '#0b0d13';
+            newBtn.style.fontWeight = 'bold';
+        }
+        if (dueBtn) {
+            dueBtn.style.background = 'transparent';
+            dueBtn.style.color = '#a0aec0';
+            dueBtn.style.fontWeight = '600';
+        }
+        if (dueContent) dueContent.style.display = 'none';
+        if (newContent) newContent.style.display = 'block';
+        if (title) title.innerText = 'Record New Membership Payment';
+    }
+}
+
+async function openCollectFeeModal(selectedPaymentId = null) {
+    if (!globalPayments || globalPayments.length === 0) {
+        await loadPayments();
+    }
+    openModal('recordFeeModal');
+    switchFeeTab('due');
+    populateDueFeeDropdown(selectedPaymentId);
+}
+
+function populateDueFeeDropdown(selectedPaymentId = null) {
+    const dueSelect = document.getElementById('feeDueRecordSelect');
+    if (!dueSelect) return;
+
+    const duePayments = globalPayments.filter(p => (Number(p.dueAmount) || 0) > 0);
+    const detailsBox = document.getElementById('feeDueDetailsBox');
+    const submitBtn = document.getElementById('feeDueSubmitBtn');
+
+    if (duePayments.length === 0) {
+        dueSelect.innerHTML = `<option value="">-- No pending dues (All athlete fees cleared! 🎉) --</option>`;
+        if (detailsBox) detailsBox.style.display = 'none';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+        }
+        const payingInput = document.getElementById('feeDueAmountPaying');
+        if (payingInput) payingInput.value = '';
+        return;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
+
+    let options = `<option value="">-- Select Member with Pending Due (${duePayments.length} Pending) --</option>`;
+    duePayments.forEach(p => {
+        const memName = p.member ? p.member.name : 'Athlete';
+        const gymId = p.member ? (p.member.gymId || p.member.customId || '') : '';
+        const planName = p.membershipPlan ? (p.membershipPlan.planName || p.membershipPlan.name) : 'Plan';
+        const due = (p.dueAmount || 0).toLocaleString('en-IN');
+        options += `<option value="${p._id}">${memName} (${gymId}) — Due: ₹${due} [${planName}]</option>`;
+    });
+
+    dueSelect.innerHTML = options;
+
+    if (selectedPaymentId && duePayments.some(p => p._id === selectedPaymentId)) {
+        dueSelect.value = selectedPaymentId;
+        onFeeDueRecordChange();
+    } else if (duePayments.length > 0) {
+        dueSelect.value = duePayments[0]._id;
+        onFeeDueRecordChange();
+    }
+}
+
+function onFeeDueRecordChange() {
+    const dueSelect = document.getElementById('feeDueRecordSelect');
+    const detailsBox = document.getElementById('feeDueDetailsBox');
+    if (!dueSelect) return;
+
+    const pay = globalPayments.find(p => p._id === dueSelect.value);
+    if (!pay) {
+        if (detailsBox) detailsBox.style.display = 'none';
+        const payingInput = document.getElementById('feeDueAmountPaying');
+        if (payingInput) payingInput.value = '';
+        return;
+    }
+
+    if (detailsBox) detailsBox.style.display = 'block';
+
+    const memNameEl = document.getElementById('feeDueMemberName');
+    const planNameEl = document.getElementById('feeDuePlanName');
+    const invEl = document.getElementById('feeDueInvoiceNo');
+    const totalEl = document.getElementById('feeDueTotalCost');
+    const paidEl = document.getElementById('feeDuePaidSoFar');
+    const dueEl = document.getElementById('feeDueOutstanding');
+    const payingInput = document.getElementById('feeDueAmountPaying');
+
+    if (memNameEl) memNameEl.innerText = `${pay.member ? pay.member.name : 'Athlete'} (${pay.member ? (pay.member.gymId || pay.member.customId || '') : '-'})`;
+    if (planNameEl) planNameEl.innerText = pay.membershipPlan ? (pay.membershipPlan.planName || pay.membershipPlan.name) : 'Membership Plan';
+    if (invEl) invEl.innerText = pay.invoiceNumber || pay.invoiceNo || '-';
+    if (totalEl) totalEl.innerText = (pay.totalAmount || 0).toLocaleString('en-IN');
+    if (paidEl) paidEl.innerText = (pay.paidAmount || 0).toLocaleString('en-IN');
+    if (dueEl) dueEl.innerText = (pay.dueAmount || 0).toLocaleString('en-IN');
+
+    if (payingInput) {
+        payingInput.value = pay.dueAmount || 0;
+        payingInput.max = pay.dueAmount || 0;
+    }
+}
+
+function onFeeMemberChange() {
+    const memberId = document.getElementById('feeMemberSelect').value;
+    const member = globalMembers.find(m => m._id === memberId);
+    if (member && (member.currentPlan || member.membershipPlan)) {
+        const planId = (member.currentPlan ? (member.currentPlan._id || member.currentPlan) : (member.membershipPlan._id || member.membershipPlan));
+        const feePlan = document.getElementById('feePlanSelect');
+        if (feePlan) {
+            feePlan.value = planId;
+            onFeePlanChange();
+        }
+    }
+}
+
+function onFeePlanChange() {
+    const feePlan = document.getElementById('feePlanSelect');
+    if (!feePlan || feePlan.selectedIndex < 0) return;
+    const selected = feePlan.options[feePlan.selectedIndex];
+    const price = selected ? (selected.getAttribute('data-price') || 0) : 0;
+    const totalEl = document.getElementById('feeTotalCost');
+    const paidEl = document.getElementById('feeAmountPaid');
+    if (totalEl) totalEl.value = price;
+    if (paidEl) paidEl.value = price;
+}
+
 function openPayDueModal(id, invoiceNumber, dueAmount) {
-    document.getElementById('duePaymentId').value = id;
-    document.getElementById('dueInvoiceNo').value = invoiceNumber;
-    document.getElementById('dueOutstanding').value = dueAmount;
-    document.getElementById('dueAmountPaying').value = dueAmount;
-    openModal('collectDueModal');
+    if (document.getElementById('duePaymentId')) {
+        document.getElementById('duePaymentId').value = id;
+        document.getElementById('dueInvoiceNo').value = invoiceNumber;
+        document.getElementById('dueOutstanding').value = dueAmount;
+        document.getElementById('dueAmountPaying').value = dueAmount;
+    }
+    openCollectFeeModal(id);
 }
 
 // Salaries
@@ -638,7 +821,36 @@ document.getElementById('createPlanForm').addEventListener('submit', async funct
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
-// Record Fee Payment
+// Collect Due Fee Payment (For Members With Pending Dues)
+const collectDueFeeForm = document.getElementById('collectDueFeeForm');
+if (collectDueFeeForm) {
+    collectDueFeeForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const id = document.getElementById('feeDueRecordSelect').value;
+        const amount = Number(document.getElementById('feeDueAmountPaying').value);
+        const paymentMode = document.getElementById('feeDuePaymentMode').value;
+
+        if (!id) {
+            customAlert('Please select a member with a pending due balance.', 'Select Member', 'warning');
+            return;
+        }
+        if (!amount || amount <= 0) {
+            customAlert('Please enter a valid payment amount.', 'Invalid Amount', 'warning');
+            return;
+        }
+
+        try {
+            const res = await api.put(`/owner/payments/${id}/pay-due`, { amount, paymentMode });
+            await customAlert(res.message || 'Due payment collected successfully!', 'Payment Received', 'success');
+            closeModal('recordFeeModal');
+            loadAllData();
+        } catch (err) {
+            customAlert(err.message, 'Error', 'error');
+        }
+    });
+}
+
+// Record Fee Payment (New Plan Subscription)
 document.getElementById('recordFeeForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     try {

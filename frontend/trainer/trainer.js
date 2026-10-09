@@ -45,10 +45,39 @@ window.addEventListener("click", function (e) {
     }
 });
 
+// Mobile Sidebar Toggle
+function toggleMobileSidebar() {
+    const menu = document.getElementById("sidebarMenu");
+    const btn = document.getElementById("sidebarToggleBtn");
+    if (!menu) return;
+    const isOpen = menu.classList.toggle("open");
+    if (btn) {
+        btn.innerHTML = isOpen ? "✕ Close" : "☰ Menu";
+    }
+}
+
+document.addEventListener("click", function(e) {
+    const sidebar = document.querySelector(".sidebar");
+    const menu = document.getElementById("sidebarMenu");
+    const btn = document.getElementById("sidebarToggleBtn");
+    if (menu && menu.classList.contains("open") && sidebar && !sidebar.contains(e.target)) {
+        menu.classList.remove("open");
+        if (btn) btn.innerHTML = "☰ Menu";
+    }
+});
+
 // Section Switcher
 function switchSection(sectionName) {
     document.querySelectorAll(".content-section").forEach(s => s.style.display = "none");
     document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+
+    // Auto-close mobile sidebar if open
+    const menu = document.getElementById("sidebarMenu");
+    const toggleBtn = document.getElementById("sidebarToggleBtn");
+    if (menu && menu.classList.contains("open")) {
+        menu.classList.remove("open");
+        if (toggleBtn) toggleBtn.innerHTML = "☰ Menu";
+    }
 
     const target = document.getElementById(`section-${sectionName}`);
     if (target) target.style.display = "block";

@@ -485,6 +485,11 @@ tbody tr:hover {
    RESPONSIVE DESIGN (TABLETS & MOBILE DEVICES)
    ========================================================================== */
 
+/* Default hidden on desktop */
+.sidebar-toggle-btn {
+    display: none;
+}
+
 @media (max-width: 992px) {
     body.dashboard-body {
         flex-direction: column;
@@ -493,36 +498,80 @@ tbody tr:hover {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid #1f2536;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        background: #121620;
     }
     .sidebar-brand {
-        padding: 16px 20px;
+        padding: 14px 18px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
+    .sidebar-brand h2 {
+        font-size: 18px;
+        margin: 0;
+        color: #f39c12;
+    }
     .sidebar-brand p {
-        margin-top: 0;
+        font-size: 11px;
+        margin: 2px 0 0 0;
+        color: #94a3b8;
+    }
+    .sidebar-toggle-btn {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        background: #1a2030;
+        color: #f39c12;
+        border: 1px solid #283046;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .sidebar-toggle-btn:hover,
+    .sidebar-toggle-btn:active {
+        background: #232b3e;
+        border-color: #f39c12;
     }
     .sidebar-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-        padding: 10px 14px;
-        gap: 8px;
+        display: none !important;
+        flex-direction: column;
+        padding: 12px 16px 18px 16px;
+        gap: 6px;
+        background: #0f131d;
+        border-top: 1px solid #1f2536;
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+    .sidebar-menu.open {
+        display: flex !important;
     }
     .nav-tab {
-        flex: 1 1 auto;
-        text-align: center;
-        padding: 9px 12px;
-        font-size: 12px;
+        width: 100%;
+        text-align: left;
+        padding: 11px 16px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+    .nav-tab.active {
+        background: #f39c12;
+        color: #0b0d13;
+        font-weight: bold;
     }
     .nav-logout {
-        margin-top: 0;
-        margin-left: auto;
-        padding: 9px 14px;
-        font-size: 12px;
+        width: 100%;
+        text-align: center;
+        margin-top: 8px;
+        padding: 11px 16px;
+        font-size: 13px;
     }
     .main-content {
-        padding: 20px 16px;
+        padding: 18px 14px;
     }
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);

@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Portal - Uchala Dumbell Gym</title>
-    <link rel="stylesheet" href="owner.css">
+    <link rel="stylesheet" href="owner.css?v=5">
 </head>
 <body class="dashboard-body">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h2>UCHALA GYM</h2>
-            <p>Uchala Dumbell Gym by Sujal</p>
+            <div>
+                <h2>UCHALA GYM</h2>
+                <p>Uchala Dumbell Gym by Sujal</p>
+            </div>
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">☰ Menu</button>
         </div>
         
-        <nav class="sidebar-menu">
+        <nav class="sidebar-menu" id="sidebarMenu">
             <button type="button" class="nav-tab active" onclick="switchSection('overview')">Overview</button>
             <button type="button" class="nav-tab" onclick="switchSection('members')">Members</button>
             <button type="button" class="nav-tab" onclick="switchSection('trainers')">Trainers</button>
@@ -84,7 +87,7 @@
                     <button type="button" onclick="openModal('registerMemberModal')" class="btn-quick">+ Register Member</button>
                     <button type="button" onclick="openModal('addTrainerModal')" class="btn-quick">+ Add Trainer</button>
                     <button type="button" onclick="openModal('assignPlanModal')" class="btn-quick">Assign Plan to Member</button>
-                    <button type="button" onclick="openModal('recordFeeModal')" class="btn-quick">Collect Fee Payment</button>
+                    <button type="button" onclick="openCollectFeeModal()" class="btn-quick">Collect Fee Payment</button>
                     <button type="button" onclick="openModal('markAttendanceModal')" class="btn-quick">Mark Attendance</button>
                 </div>
             </div>
@@ -301,7 +304,7 @@
                     <h1>Customer Payments & Receipts</h1>
                     <p>Track membership fees, collect pending balances, edit entries and view invoices</p>
                 </div>
-                <button type="button" onclick="openModal('recordFeeModal')" class="btn-primary">+ Record Payment</button>
+                <button type="button" onclick="openCollectFeeModal()" class="btn-primary">+ Collect / Record Payment</button>
             </div>
             <div class="table-card">
                 <table>
@@ -558,42 +561,125 @@
         </div>
     </div>
 
-    <!-- MODAL 5: RECORD FEE / OFFLINE PAYMENT -->
+    <!-- MODAL 5: COLLECT FEE PAYMENT (PENDING DUES & NEW PAYMENTS) -->
     <div id="recordFeeModal" class="modal-bg" style="display: none;">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Record Customer Fee Payment</h3>
+                <h3 id="feeModalTitle">Collect Customer Fee Payment</h3>
                 <span onclick="closeModal('recordFeeModal')" class="close-btn">&times;</span>
             </div>
-            <form id="recordFeeForm">
-                <div class="form-group">
-                    <label>Select Member *</label>
-                    <select id="feeMemberSelect" required onchange="onFeeMemberChange()"></select>
-                </div>
-                <div class="form-group">
-                    <label>Select Plan *</label>
-                    <select id="feePlanSelect" required onchange="onFeePlanChange()"></select>
-                </div>
-                <div class="form-row">
+
+            <!-- TABS -->
+            <div style="display: flex; gap: 8px; margin: 12px 0 16px 0; background: #0c0f17; padding: 4px; border-radius: 8px; border: 1px solid #1f2536;">
+                <button type="button" id="tabDueFeeBtn" onclick="switchFeeTab('due')" style="flex: 1; padding: 8px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background: #f39c12; color: #0b0d13; transition: all 0.2s;">
+                    Members with Due Payment
+                </button>
+                <button type="button" id="tabNewFeeBtn" onclick="switchFeeTab('new')" style="flex: 1; padding: 8px 12px; font-size: 13px; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: #a0aec0; transition: all 0.2s;">
+                    + New Plan Invoice
+                </button>
+            </div>
+
+            <!-- TAB 1: COLLECT PENDING DUE (DEFAULT FOR DUE PAYMENTS) -->
+            <div id="tabDueFeeContent">
+                <p style="color: #a0aec0; font-size: 13px; margin-bottom: 12px;">
+                    Select an athlete with an outstanding balance to collect their fee.
+                </p>
+                <form id="collectDueFeeForm">
                     <div class="form-group">
-                        <label>Total Plan Cost (₹)</label>
-                        <input type="number" id="feeTotalCost" readonly>
+                        <label>Select Member with Pending Due *</label>
+                        <select id="feeDueRecordSelect" required onchange="onFeeDueRecordChange()"></select>
+                    </div>
+
+                    <!-- DUE DETAILS SUMMARY CARD -->
+                    <div id="feeDueDetailsBox" style="display: none; background: #0b0f19; border: 1px solid #232d42; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; margin-bottom: 10px;">
+                            <div>
+                                <span style="color: #718096; display: block; font-size: 11px;">ATHLETE</span>
+                                <strong id="feeDueMemberName" style="color: #fff;">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: #718096; display: block; font-size: 11px;">PLAN</span>
+                                <strong id="feeDuePlanName" style="color: #f39c12;">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: #718096; display: block; font-size: 11px;">INVOICE #</span>
+                                <span id="feeDueInvoiceNo" style="font-family: monospace; color: #cbd5e1;">-</span>
+                            </div>
+                            <div>
+                                <span style="color: #718096; display: block; font-size: 11px;">TOTAL PLAN COST</span>
+                                <strong style="color: #fff;">₹<span id="feeDueTotalCost">0</span></strong>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #1f2536; padding-top: 10px; margin-top: 4px;">
+                            <div>
+                                <span style="color: #718096; font-size: 11px; display: block;">PAID SO FAR</span>
+                                <strong style="color: #2ecc71;">₹<span id="feeDuePaidSoFar">0</span></strong>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: #e74c3c; font-size: 11px; display: block; font-weight: bold;">OUTSTANDING DUE</span>
+                                <span style="color: #e74c3c; font-size: 18px; font-weight: 800;">₹<span id="feeDueOutstanding">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Amount Paying Now (₹) *</label>
+                            <input type="number" id="feeDueAmountPaying" min="1" required placeholder="Enter amount to pay">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Mode</label>
+                            <select id="feeDuePaymentMode">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI / GPay / PhonePe</option>
+                                <option value="Card">Debit / Credit Card</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="feeDueSubmitBtn" class="btn-primary" style="width: 100%; margin-top: 10px; background: #2ecc71; color: #000; font-weight: bold;">
+                        Collect Due Payment & Generate Receipt
+                    </button>
+                </form>
+            </div>
+
+            <!-- TAB 2: RECORD NEW PLAN INVOICE -->
+            <div id="tabNewFeeContent" style="display: none;">
+                <p style="color: #a0aec0; font-size: 13px; margin-bottom: 12px;">
+                    Create a fresh plan subscription and initial invoice for a member.
+                </p>
+                <form id="recordFeeForm">
+                    <div class="form-group">
+                        <label>Select Member *</label>
+                        <select id="feeMemberSelect" required onchange="onFeeMemberChange()"></select>
                     </div>
                     <div class="form-group">
-                        <label>Amount Paid (₹) *</label>
-                        <input type="number" id="feeAmountPaid" required>
+                        <label>Select Plan *</label>
+                        <select id="feePlanSelect" required onchange="onFeePlanChange()"></select>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Payment Mode</label>
-                    <select id="feePaymentMode">
-                        <option value="Cash">Cash</option>
-                        <option value="UPI">UPI / GPay / PhonePe</option>
-                        <option value="Card">Card</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Invoice & Receipt</button>
-            </form>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Total Plan Cost (₹)</label>
+                            <input type="number" id="feeTotalCost" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount Paid (₹) *</label>
+                            <input type="number" id="feeAmountPaid" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Mode</label>
+                        <select id="feePaymentMode">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI / GPay / PhonePe</option>
+                            <option value="Card">Debit / Credit Card</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Invoice & Receipt</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -982,7 +1068,7 @@
   </div>
 </div>
 
-    <script src="../custom-dialog.js?v=4"></script>
-    <script src="owner.js?v=4"></script>
+    <script src="../custom-dialog.js?v=5"></script>
+    <script src="owner.js?v=5"></script>
 </body>
 </html>
