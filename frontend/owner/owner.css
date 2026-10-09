@@ -218,6 +218,9 @@ body.dashboard-body {
     border-radius: 8px;
     padding: 20px;
     overflow-x: auto;
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+    position: relative;
 }
 
 .table-header {
@@ -233,12 +236,21 @@ table {
     font-size: 13px;
 }
 
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
 th {
     background-color: #181d2a;
     color: #f39c12;
     text-align: left;
     padding: 12px 14px;
     font-size: 12px;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 1px 0 #1f2536;
 }
 
 td {
@@ -419,6 +431,32 @@ tbody tr:hover {
     max-width: 520px;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.modal-card form {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0d13;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #232d42;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #f39c12;
 }
 
 .modal-header {

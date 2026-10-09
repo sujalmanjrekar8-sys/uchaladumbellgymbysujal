@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Portal - Uchala Dumbell Gym</title>
-    <link rel="stylesheet" href="owner.css?v=5">
+    <link rel="stylesheet" href="owner.css?v=6">
 </head>
 <body class="dashboard-body">
 
@@ -474,9 +474,20 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Amount Paid Now (₹)</label>
-                    <input type="number" id="regMemPaid" placeholder="0">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Amount Paid Now (₹)</label>
+                        <input type="number" id="regMemPaid" min="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Mode</label>
+                        <select id="regMemPaymentMode">
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI / GPay / PhonePe</option>
+                            <option value="Card">Debit / Credit Card</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save & Register Member</button>
             </form>

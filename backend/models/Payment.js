@@ -31,7 +31,17 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMode: {
       type: String,
-      enum: ['Cash', 'UPI / GPay / PhonePe', 'Debit/Credit Card', 'Bank Transfer'],
+      enum: [
+        'Cash',
+        'UPI',
+        'UPI / GPay / PhonePe',
+        'Card',
+        'Debit/Credit Card',
+        'Debit / Credit Card',
+        'Bank Transfer',
+        'Online',
+        'Cheque'
+      ],
       default: 'Cash'
     },
     paymentDate: {

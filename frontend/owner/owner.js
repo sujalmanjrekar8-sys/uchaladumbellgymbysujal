@@ -758,6 +758,7 @@ async function loadDiets() {
 document.getElementById('registerMemberForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     try {
+        const modeInput = document.getElementById('regMemPaymentMode');
         await api.post('/owner/members', {
             name: document.getElementById('regMemName').value,
             email: document.getElementById('regMemEmail').value,
@@ -765,7 +766,8 @@ document.getElementById('registerMemberForm').addEventListener('submit', async f
             password: document.getElementById('regMemPassword').value || 'member123',
             planId: document.getElementById('regMemPlan').value || null,
             assignedTrainer: document.getElementById('regMemTrainer').value || null,
-            paidAmount: Number(document.getElementById('regMemPaid').value) || 0
+            paidAmount: Number(document.getElementById('regMemPaid').value) || 0,
+            paymentMode: modeInput ? modeInput.value : 'Cash'
         });
         await customAlert('Member registered and plan activated successfully!', 'Member Created', 'success');
         closeModal('registerMemberModal');
