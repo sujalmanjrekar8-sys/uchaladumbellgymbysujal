@@ -95,34 +95,48 @@ const assignWorkout = async (req, res) => {
 
     const cleanTitle = (workoutTitle || 'Daily Workout').trim();
 
-    // Check if an uncompleted routine with the same title already exists for this day to update it
-    let existingRoutine = await Workout.findOne({
+    // 1. If an uncompleted (pending) routine with this title exists for today, update it
+    let existingPending = await Workout.findOne({
       member: memberId,
       day,
-      workoutTitle: cleanTitle
+      workoutTitle: cleanTitle,
+      isCompleted: false
     });
 
-    if (existingRoutine) {
-      existingRoutine.trainer = req.user._id;
-      existingRoutine.exercises = exercises || [];
-      existingRoutine.notes = notes !== undefined ? notes : existingRoutine.notes;
-      existingRoutine.isCompleted = false;
-      existingRoutine.completedAt = null;
-      await existingRoutine.save();
+    if (existingPending) {
+      existingPending.trainer = req.user._id;
+      existingPending.exercises = exercises || [];
+      existingPending.notes = notes !== undefined ? notes : existingPending.notes;
+      await existingPending.save();
 
       return res.status(200).json({
         success: true,
         message: `Workout routine '${cleanTitle}' updated for ${day}.`,
-        workout: existingRoutine
+        workout: existingPending
       });
     }
 
-    // Otherwise create a new routine session for this day (preserves any completed sessions)
+    // 2. If a routine with this title was already COMPLETED by the member today:
+    // Never overwrite completed work! Auto-label as Part 2 / Part 3 and create as new pending session.
+    const escaped = cleanTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const completedSameTitleCount = await Workout.countDocuments({
+      member: memberId,
+      day,
+      workoutTitle: { $regex: new RegExp(`^${escaped}`, 'i') },
+      isCompleted: true
+    });
+
+    let finalTitle = cleanTitle;
+    if (completedSameTitleCount > 0) {
+      finalTitle = `${cleanTitle} (Part ${completedSameTitleCount + 1})`;
+    }
+
+    // 3. Create new routine session for this day
     const workout = await Workout.create({
       member: memberId,
       trainer: req.user._id,
       day,
-      workoutTitle,
+      workoutTitle: finalTitle,
       exercises: exercises || [],
       notes: notes || '',
       isCompleted: false,
@@ -131,7 +145,7 @@ const assignWorkout = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Workout routine '${workoutTitle}' assigned for ${day}.`,
+      message: `Workout routine '${finalTitle}' added for ${day}.`,
       workout
     });
   } catch (error) {

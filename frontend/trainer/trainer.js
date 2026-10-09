@@ -416,6 +416,25 @@ function quickSetDiet(memberId) {
     if (select) select.value = memberId;
 }
 
+function addExerciseRow() {
+    const container = document.getElementById("exercisesContainer");
+    if (!container) return;
+    const rowCount = container.querySelectorAll(".exercise-item-row").length + 1;
+    const row = document.createElement("div");
+    row.className = "exercise-item-row";
+    row.style.marginBottom = "10px";
+    row.innerHTML = `
+        <div class="form-row" style="align-items: center;">
+            <input type="text" class="ex-input-name" placeholder="Exercise ${rowCount} Name" style="flex:2;" required>
+            <input type="text" class="ex-input-sets" placeholder="Sets (e.g. 3)" style="flex:1;">
+            <input type="text" class="ex-input-reps" placeholder="Reps (e.g. 12)" style="flex:1;">
+            <input type="text" class="ex-input-weight" placeholder="Weight" style="flex:1;">
+            <button type="button" onclick="this.closest('.exercise-item-row').remove()" style="background: transparent; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1;" title="Remove exercise">&times;</button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
 // ==================== MODAL SUBMIT HANDLERS ====================
 
 // 1. Assign Daily Workout
@@ -427,25 +446,22 @@ document.getElementById("assignWorkoutForm").addEventListener("submit", async fu
     const notes = document.getElementById("workoutNotesInput").value.trim();
 
     const exercises = [];
-    const ex1Name = document.getElementById("ex1Name").value.trim();
-    if (ex1Name) {
-        exercises.push({
-            name: ex1Name,
-            sets: parseInt(document.getElementById("ex1Sets").value) || 4,
-            reps: document.getElementById("ex1Reps").value.trim() || "10",
-            weight: document.getElementById("ex1Weight").value.trim() || ""
-        });
-    }
+    document.querySelectorAll("#exercisesContainer .exercise-item-row").forEach(row => {
+        const nameInput = row.querySelector(".ex-input-name");
+        const setsInput = row.querySelector(".ex-input-sets");
+        const repsInput = row.querySelector(".ex-input-reps");
+        const weightInput = row.querySelector(".ex-input-weight");
 
-    const ex2Name = document.getElementById("ex2Name").value.trim();
-    if (ex2Name) {
-        exercises.push({
-            name: ex2Name,
-            sets: parseInt(document.getElementById("ex2Sets").value) || 3,
-            reps: document.getElementById("ex2Reps").value.trim() || "12",
-            weight: document.getElementById("ex2Weight").value.trim() || ""
-        });
-    }
+        const name = nameInput ? nameInput.value.trim() : "";
+        if (name) {
+            exercises.push({
+                name,
+                sets: parseInt(setsInput ? setsInput.value : 3) || 3,
+                reps: repsInput && repsInput.value.trim() ? repsInput.value.trim() : "10-12",
+                weight: weightInput && weightInput.value.trim() ? weightInput.value.trim() : ""
+            });
+        }
+    });
 
     try {
         await fetchAuth("/trainer/workouts", {
