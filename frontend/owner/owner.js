@@ -242,7 +242,7 @@ function renderTrainers() {
     if (!tbody) return;
 
     if (!globalTrainers || globalTrainers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#777;">No trainers hired yet</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#777;">No trainers hired yet</td></tr>`;
         return;
     }
 
@@ -254,6 +254,7 @@ function renderTrainers() {
             <td>${t.specialization || 'General Fitness'}</td>
             <td><strong>₹${(t.monthlySalary || t.salary || 0).toLocaleString('en-IN')}</strong></td>
             <td>${t.traineesCount || 0} Athletes</td>
+            <td><span class="${t.isActive !== false ? 'badge-active' : 'badge-due'}">${t.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span></td>
             <td>
                 <button onclick="openEditTrainerModal('${t._id}')" class="btn-action-edit">Edit</button>
                 <button onclick="promptResetPassword('${t._id}', '${t.name}')" class="btn-action-reset">Reset Pass</button>
