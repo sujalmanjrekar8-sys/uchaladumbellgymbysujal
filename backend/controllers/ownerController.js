@@ -694,10 +694,11 @@ const payDuePayment = async (req, res) => {
 
 const updatePayment = async (req, res) => {
   try {
-    const { paidAmount, dueAmount, totalAmount, paymentMode, paymentDate, notes } = req.body;
+    const { paidAmount, dueAmount, totalAmount, paymentMode, paymentDate, notes, planId } = req.body;
     const payment = await Payment.findById(req.params.id);
     if (!payment) return res.status(404).json({ success: false, message: 'Payment record not found' });
 
+    if (planId) payment.membershipPlan = planId;
     if (paidAmount !== undefined) payment.paidAmount = Number(paidAmount);
     if (dueAmount !== undefined) payment.dueAmount = Number(dueAmount);
     if (totalAmount !== undefined) payment.totalAmount = Number(totalAmount);

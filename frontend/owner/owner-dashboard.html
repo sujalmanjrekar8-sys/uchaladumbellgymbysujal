@@ -953,9 +953,15 @@
     <form id="editPaymentForm">
       <input type="hidden" id="editPaymentId">
       
-      <div class="form-group">
-        <label>Invoice #</label>
-        <input type="text" id="editPayInvoiceNo" disabled>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Invoice #</label>
+          <input type="text" id="editPayInvoiceNo" disabled>
+        </div>
+        <div class="form-group">
+          <label>Membership Plan</label>
+          <select id="editPayPlan" onchange="onEditPayPlanChange()"></select>
+        </div>
       </div>
 
       <div class="form-row">

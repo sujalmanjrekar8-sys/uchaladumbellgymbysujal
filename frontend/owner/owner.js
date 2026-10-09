@@ -307,10 +307,20 @@ function populateDropdowns() {
     const planOptions = `<option value="">-- Select Plan --</option>` + 
         globalPlans.map(p => `<option value="${p._id}" data-price="${p.price}">${p.planName || p.name} (₹${p.price})</option>`).join('');
 
-    ['regMemPlan', 'assignPlanSelect', 'feePlanSelect', 'directPlanSelect'].forEach(id => {
+    ['regMemPlan', 'assignPlanSelect', 'feePlanSelect', 'directPlanSelect', 'editPayPlan'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = planOptions;
     });
+
+    const regPlan = document.getElementById('regMemPlan');
+    if (regPlan) {
+        regPlan.addEventListener('change', () => {
+            const selected = regPlan.options[regPlan.selectedIndex];
+            const price = selected ? (selected.getAttribute('data-price') || 0) : 0;
+            const paidInput = document.getElementById('regMemPaid');
+            if (paidInput && price) paidInput.value = price;
+        });
+    }
 
     const feePlan = document.getElementById('feePlanSelect');
     if (feePlan) {
@@ -426,6 +436,10 @@ function openEditPaymentModal(id) {
     if (!pay) return;
     document.getElementById('editPaymentId').value = pay._id;
     document.getElementById('editPayInvoiceNo').value = pay.invoiceNumber || pay.invoiceNo || '-';
+    const planSelect = document.getElementById('editPayPlan');
+    if (planSelect) {
+        planSelect.value = pay.membershipPlan ? (pay.membershipPlan._id || pay.membershipPlan) : '';
+    }
     document.getElementById('editPayTotalAmount').value = pay.totalAmount || ((pay.paidAmount || 0) + (pay.dueAmount || 0));
     document.getElementById('editPayPaidAmount').value = pay.paidAmount || 0;
     document.getElementById('editPayDueAmount').value = pay.dueAmount || 0;
@@ -433,6 +447,17 @@ function openEditPaymentModal(id) {
     document.getElementById('editPayDate').value = pay.paymentDate ? new Date(pay.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
     document.getElementById('editPayNotes').value = pay.notes || '';
     openModal('editPaymentModal');
+}
+
+function onEditPayPlanChange() {
+    const planSelect = document.getElementById('editPayPlan');
+    if (!planSelect || planSelect.selectedIndex < 0) return;
+    const selected = planSelect.options[planSelect.selectedIndex];
+    const price = selected ? Number(selected.getAttribute('data-price')) : 0;
+    if (price > 0) {
+        document.getElementById('editPayTotalAmount').value = price;
+        recalcEditPayDue();
+    }
 }
 
 function recalcEditPayDue() {
@@ -1107,7 +1132,10 @@ if (editPaymentFormEl) {
         const notes = document.getElementById('editPayNotes').value;
 
         try {
+            const planSelect = document.getElementById('editPayPlan');
+            const planId = planSelect ? planSelect.value : undefined;
             const res = await api.put(`/owner/payments/${id}`, {
+                planId,
                 totalAmount,
                 paidAmount,
                 dueAmount,
