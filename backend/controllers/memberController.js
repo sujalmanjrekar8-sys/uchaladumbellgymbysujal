@@ -14,6 +14,24 @@ const getTodayWorkout = async (req, res) => {
     // Allow client to pass their local day of week (avoids server UTC timezone mismatch)
     const currentDay = req.query.day || daysOfWeek[new Date().getDay()];
 
+    // Auto-reset workouts completed in previous weeks so the new week starts fresh
+    const now = new Date();
+    const dayIndex = now.getDay();
+    const diff = now.getDate() - dayIndex + (dayIndex === 0 ? -6 : 1);
+    const startOfWeek = new Date(now.setDate(diff));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    await Workout.updateMany(
+      {
+        member: req.user._id,
+        isCompleted: true,
+        completedAt: { $lt: startOfWeek }
+      },
+      {
+        $set: { isCompleted: false, completedAt: null }
+      }
+    );
+
     // Find all workouts specifically for requested day
     const todayWorkouts = await Workout.find({
       member: req.user._id,

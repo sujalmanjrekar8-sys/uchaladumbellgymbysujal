@@ -112,6 +112,14 @@ body.dashboard-body {
     align-items: center;
 }
 
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
 .page-title {
     margin-bottom: 20px;
 }

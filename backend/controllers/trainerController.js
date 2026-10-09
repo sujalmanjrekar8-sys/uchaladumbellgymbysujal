@@ -23,9 +23,35 @@ const getMyTrainees = async (req, res) => {
   }
 };
 
+// Helper: auto-reset workouts completed in previous weeks so current week starts fresh
+const resetOldWeekWorkouts = async (query = {}) => {
+  try {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(now.setDate(diff));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    await Workout.updateMany(
+      {
+        ...query,
+        isCompleted: true,
+        completedAt: { $lt: startOfWeek }
+      },
+      {
+        $set: { isCompleted: false, completedAt: null }
+      }
+    );
+  } catch (e) {
+    console.error('Error auto-resetting workouts:', e);
+  }
+};
+
 // 2. WORKOUTS
 const getAllMyWorkouts = async (req, res) => {
   try {
+    await resetOldWeekWorkouts({ trainer: req.user._id });
+
     const workouts = await Workout.find({
       trainer: req.user._id
     }).populate('member', 'name gymId phone').sort({ createdAt: -1 });
@@ -38,6 +64,8 @@ const getAllMyWorkouts = async (req, res) => {
 
 const getTraineeWorkouts = async (req, res) => {
   try {
+    await resetOldWeekWorkouts({ member: req.params.memberId });
+
     const workouts = await Workout.find({
       member: req.params.memberId,
       trainer: req.user._id
@@ -65,13 +93,33 @@ const assignWorkout = async (req, res) => {
       });
     }
 
-    const workout = await Workout.create({
+    // Check if a routine already exists for this trainee on this day - update if exists, don't duplicate
+    let workout = await Workout.findOne({ member: memberId, day });
+    if (workout) {
+      workout.trainer = req.user._id;
+      workout.workoutTitle = workoutTitle;
+      workout.exercises = exercises || [];
+      workout.notes = notes !== undefined ? notes : workout.notes;
+      workout.isCompleted = false;
+      workout.completedAt = null;
+      await workout.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `Workout routine '${workoutTitle}' updated for ${day}.`,
+        workout
+      });
+    }
+
+    workout = await Workout.create({
       member: memberId,
       trainer: req.user._id,
       day,
       workoutTitle,
       exercises: exercises || [],
-      notes: notes || ''
+      notes: notes || '',
+      isCompleted: false,
+      completedAt: null
     });
 
     res.status(201).json({

@@ -179,7 +179,7 @@ async function loadTodayWorkout(dayOverride) {
         document.getElementById("workoutDaySubtitle").textContent = `${dayLabel}'s Split: ${titles.join(' + ')}`;
 
         // Set Coach Notes
-        const notesList = todayList.map(w => w.notes).filter(Boolean);
+        const notesList = todayList.map(w => w.notes).filter(n => n && n.trim() && n.trim() !== '-');
         if (notesList.length > 0) {
             document.getElementById("coachNotesText").textContent = `"${notesList.join(' | ')}"`;
         } else {
@@ -194,6 +194,17 @@ async function loadTodayWorkout(dayOverride) {
                 : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today</span>`;
         }
 
+        const formatReps = (r) => {
+            if (!r) return '10-12 reps';
+            const s = String(r).trim();
+            return s.toLowerCase().includes('rep') ? s : `${s} reps`;
+        };
+        const formatSets = (s) => {
+            if (!s) return '3-4 sets';
+            const str = String(s).trim();
+            return str.toLowerCase().includes('set') ? str : `${str} sets`;
+        };
+
         // Populate All Exercises Table
         let rowsHtml = '';
         todayList.forEach((w, idx) => {
@@ -206,8 +217,8 @@ async function loadTodayWorkout(dayOverride) {
                 rowsHtml += w.exercises.map(e => `
                     <tr>
                         <td><strong style="color:#f39c12;">${e.name}</strong></td>
-                        <td>${e.sets || 4} sets</td>
-                        <td>${e.reps || 10} reps</td>
+                        <td>${formatSets(e.sets)}</td>
+                        <td>${formatReps(e.reps)}</td>
                         <td>${e.weight ? `${e.weight}` : '-'}</td>
                     </tr>
                 `).join('');
@@ -215,9 +226,9 @@ async function loadTodayWorkout(dayOverride) {
                 rowsHtml += `
                     <tr>
                         <td><strong style="color:#f39c12;">${w.exercise}</strong></td>
-                        <td>${w.sets || 4} sets</td>
-                        <td>${w.reps || w.setsReps || 10} reps</td>
-                        <td>${w.weight ? `${w.weight} kg` : '-'}</td>
+                        <td>${formatSets(w.sets)}</td>
+                        <td>${formatReps(w.reps || w.setsReps)}</td>
+                        <td>${w.weight ? `${w.weight}` : '-'}</td>
                     </tr>
                 `;
             }
