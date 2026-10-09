@@ -427,8 +427,8 @@ tbody tr:hover {
     border: 1px solid #283046;
     border-radius: 8px;
     padding: 26px;
-    width: 100%;
-    max-width: 520px;
+    width: 95%;
+    max-width: 620px;
     max-height: 90vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -437,7 +437,7 @@ tbody tr:hover {
 
 .modal-card form {
     width: 100%;
-    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 /* Custom Scrollbars */
@@ -485,15 +485,19 @@ tbody tr:hover {
     margin-bottom: 14px;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    min-width: 0;
 }
 
 .form-row {
     display: flex;
     gap: 15px;
+    width: 100%;
 }
 
 .form-row .form-group {
     flex: 1;
+    min-width: 0;
 }
 
 .form-group label {
@@ -505,6 +509,9 @@ tbody tr:hover {
 
 .form-group input,
 .form-group select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 10px;
     background-color: #0b0d13;
     border: 1px solid #1f2536;
