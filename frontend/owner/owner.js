@@ -1,4 +1,4 @@
-const API_BASE = (window.location.port === "5000" && window.location.protocol.startsWith("http")) ? "/api" : "http://localhost:5000/api";
+const API_BASE = "/api";
 
 // 1. API Helper (Matches Product 2 methods: get, post, put, delete)
 const api = {
