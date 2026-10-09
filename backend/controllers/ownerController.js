@@ -288,7 +288,7 @@ const createPlan = async (req, res) => {
 // POST /api/owner/assign-plan
 const assignPlanToMember = async (req, res) => {
   try {
-    const { memberId, planId, startDate } = req.body;
+    const { memberId, planId, startDate, paidAmount, paymentMode } = req.body;
 
     const member = await User.findById(memberId);
     if (!member || member.role !== 'member') {
@@ -310,18 +310,23 @@ const assignPlanToMember = async (req, res) => {
 
     await member.save();
 
-    // Create an initial invoice with pending due balance for this assigned plan
+    const totalAmount = Number(plan.price) || 0;
+    const amountPaid = Math.min(totalAmount, Math.max(0, Number(paidAmount) || 0));
+    const dueAmount = Math.max(0, totalAmount - amountPaid);
+    const status = dueAmount === 0 ? 'Paid' : (amountPaid > 0 ? 'Partial' : 'Pending');
+
+    // Create a single clean invoice for this assigned plan
     const invoiceCount = await Payment.countDocuments();
     const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
     await Payment.create({
       invoiceNumber,
       member: member._id,
       membershipPlan: plan._id,
-      totalAmount: plan.price,
-      paidAmount: 0,
-      dueAmount: plan.price,
-      paymentMode: 'Cash',
-      status: 'Pending',
+      totalAmount,
+      paidAmount: amountPaid,
+      dueAmount,
+      paymentMode: paymentMode || 'Cash',
+      status,
       notes: `Plan assigned on ${start.toLocaleDateString()}`
     });
 

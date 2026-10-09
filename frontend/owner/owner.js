@@ -322,9 +322,28 @@ function populateDropdowns() {
         });
     }
 
-    const feePlan = document.getElementById('feePlanSelect');
-    if (feePlan) {
-        feePlan.addEventListener('change', onFeePlanChange);
+    const assignPlan = document.getElementById('assignPlanSelect');
+    if (assignPlan) {
+        assignPlan.addEventListener('change', () => {
+            const selected = assignPlan.options[assignPlan.selectedIndex];
+            const price = selected ? (Number(selected.getAttribute('data-price')) || 0) : 0;
+            const costEl = document.getElementById('assignPlanTotalCost');
+            const paidEl = document.getElementById('assignPlanPaidAmount');
+            if (costEl) costEl.value = price;
+            if (paidEl) paidEl.value = price;
+        });
+    }
+
+    const directPlan = document.getElementById('directPlanSelect');
+    if (directPlan) {
+        directPlan.addEventListener('change', () => {
+            const selected = directPlan.options[directPlan.selectedIndex];
+            const price = selected ? (Number(selected.getAttribute('data-price')) || 0) : 0;
+            const costEl = document.getElementById('directPlanTotalCost');
+            const paidEl = document.getElementById('directPlanPaidAmount');
+            if (costEl) costEl.value = price;
+            if (paidEl) paidEl.value = price;
+        });
     }
 
     const startDateInput = document.getElementById('assignPlanStartDate');
@@ -476,51 +495,11 @@ async function deletePaymentRecord(id, inv) {
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 }
 
-function switchFeeTab(tab) {
-    const dueBtn = document.getElementById('tabDueFeeBtn');
-    const newBtn = document.getElementById('tabNewFeeBtn');
-    const dueContent = document.getElementById('tabDueFeeContent');
-    const newContent = document.getElementById('tabNewFeeContent');
-    const title = document.getElementById('feeModalTitle');
-
-    if (tab === 'due') {
-        if (dueBtn) {
-            dueBtn.style.background = '#f39c12';
-            dueBtn.style.color = '#0b0d13';
-            dueBtn.style.fontWeight = 'bold';
-        }
-        if (newBtn) {
-            newBtn.style.background = 'transparent';
-            newBtn.style.color = '#a0aec0';
-            newBtn.style.fontWeight = '600';
-        }
-        if (dueContent) dueContent.style.display = 'block';
-        if (newContent) newContent.style.display = 'none';
-        if (title) title.innerText = 'Collect Customer Fee Payment';
-        populateDueFeeDropdown();
-    } else {
-        if (newBtn) {
-            newBtn.style.background = '#f39c12';
-            newBtn.style.color = '#0b0d13';
-            newBtn.style.fontWeight = 'bold';
-        }
-        if (dueBtn) {
-            dueBtn.style.background = 'transparent';
-            dueBtn.style.color = '#a0aec0';
-            dueBtn.style.fontWeight = '600';
-        }
-        if (dueContent) dueContent.style.display = 'none';
-        if (newContent) newContent.style.display = 'block';
-        if (title) title.innerText = 'Record New Membership Payment';
-    }
-}
-
 async function openCollectFeeModal(selectedPaymentId = null) {
     if (!globalPayments || globalPayments.length === 0) {
         await loadPayments();
     }
     openModal('recordFeeModal');
-    switchFeeTab('due');
     populateDueFeeDropdown(selectedPaymentId);
 }
 
@@ -814,20 +793,27 @@ document.getElementById('addTrainerForm').addEventListener('submit', async funct
     } catch (err) { customAlert(err.message, 'Error', 'error'); }
 });
 
-// Assign Plan
-document.getElementById('assignPlanForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    try {
-        const res = await api.post('/owner/assign-plan', {
-            memberId: document.getElementById('assignPlanMemberSelect').value,
-            planId: document.getElementById('assignPlanSelect').value,
-            startDate: document.getElementById('assignPlanStartDate').value
-        });
-        await customAlert(res.message || 'Plan activated!', 'Plan Assigned', 'success');
-        closeModal('assignPlanModal');
-        loadAllData();
-    } catch (err) { customAlert(err.message, 'Error', 'error'); }
-});
+// Assign Plan Modal
+const assignPlanModalForm = document.getElementById('assignPlanForm');
+if (assignPlanModalForm) {
+    assignPlanModalForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        try {
+            const paidEl = document.getElementById('assignPlanPaidAmount');
+            const modeEl = document.getElementById('assignPlanPaymentMode');
+            const res = await api.post('/owner/assign-plan', {
+                memberId: document.getElementById('assignPlanMemberSelect').value,
+                planId: document.getElementById('assignPlanSelect').value,
+                startDate: document.getElementById('assignPlanStartDate').value,
+                paidAmount: paidEl ? (Number(paidEl.value) || 0) : 0,
+                paymentMode: modeEl ? modeEl.value : 'Cash'
+            });
+            await customAlert(res.message || 'Plan activated and invoice generated!', 'Plan Assigned', 'success');
+            closeModal('assignPlanModal');
+            loadAllData();
+        } catch (err) { customAlert(err.message, 'Error', 'error'); }
+    });
+}
 
 // Create Plan
 document.getElementById('createPlanForm').addEventListener('submit', async function (e) {
@@ -875,23 +861,26 @@ if (collectDueFeeForm) {
     });
 }
 
-// Record Fee Payment (New Plan Subscription)
-document.getElementById('recordFeeForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    try {
-        await api.post('/owner/payments', {
-            memberId: document.getElementById('feeMemberSelect').value,
-            planId: document.getElementById('feePlanSelect').value,
-            totalAmount: Number(document.getElementById('feeTotalCost').value),
-            paidAmount: Number(document.getElementById('feeAmountPaid').value),
-            paymentMode: document.getElementById('feePaymentMode').value
-        });
-        await customAlert('Payment recorded and Invoice generated!', 'Payment Recorded', 'success');
-        closeModal('recordFeeModal');
-        this.reset();
-        loadAllData();
-    } catch (err) { customAlert(err.message, 'Error', 'error'); }
-});
+// Record Fee Payment (Guarded for legacy compatibility)
+const recordFeeForm = document.getElementById('recordFeeForm');
+if (recordFeeForm) {
+    recordFeeForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        try {
+            await api.post('/owner/payments', {
+                memberId: document.getElementById('feeMemberSelect').value,
+                planId: document.getElementById('feePlanSelect').value,
+                totalAmount: Number(document.getElementById('feeTotalCost').value),
+                paidAmount: Number(document.getElementById('feeAmountPaid').value),
+                paymentMode: document.getElementById('feePaymentMode').value
+            });
+            await customAlert('Payment recorded and Invoice generated!', 'Payment Recorded', 'success');
+            closeModal('recordFeeModal');
+            this.reset();
+            loadAllData();
+        } catch (err) { customAlert(err.message, 'Error', 'error'); }
+    });
+}
 
 // Assign Plan Direct Form
 const directPlanForm = document.getElementById('assignPlanDirectForm');
@@ -899,10 +888,14 @@ if (directPlanForm) {
     directPlanForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         try {
+            const paidInput = document.getElementById('directPlanPaidAmount');
+            const modeInput = document.getElementById('directPlanPaymentMode');
             const res = await api.post('/owner/assign-plan', {
                 memberId: document.getElementById('directPlanMemberSelect').value,
                 planId: document.getElementById('directPlanSelect').value,
-                startDate: document.getElementById('directPlanStartDate').value
+                startDate: document.getElementById('directPlanStartDate').value,
+                paidAmount: paidInput ? (Number(paidInput.value) || 0) : 0,
+                paymentMode: modeInput ? modeInput.value : 'Cash'
             });
             await customAlert(res.message || 'Membership plan activated successfully!', 'Membership Plan Assigned', 'success');
             loadAllData();
