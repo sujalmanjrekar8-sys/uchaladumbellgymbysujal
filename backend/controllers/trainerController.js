@@ -93,25 +93,32 @@ const assignWorkout = async (req, res) => {
       });
     }
 
-    // Check if a routine already exists for this trainee on this day - update if exists, don't duplicate
-    let workout = await Workout.findOne({ member: memberId, day });
-    if (workout) {
-      workout.trainer = req.user._id;
-      workout.workoutTitle = workoutTitle;
-      workout.exercises = exercises || [];
-      workout.notes = notes !== undefined ? notes : workout.notes;
-      workout.isCompleted = false;
-      workout.completedAt = null;
-      await workout.save();
+    const cleanTitle = (workoutTitle || 'Daily Workout').trim();
+
+    // Check if an uncompleted routine with the same title already exists for this day to update it
+    let existingRoutine = await Workout.findOne({
+      member: memberId,
+      day,
+      workoutTitle: cleanTitle
+    });
+
+    if (existingRoutine) {
+      existingRoutine.trainer = req.user._id;
+      existingRoutine.exercises = exercises || [];
+      existingRoutine.notes = notes !== undefined ? notes : existingRoutine.notes;
+      existingRoutine.isCompleted = false;
+      existingRoutine.completedAt = null;
+      await existingRoutine.save();
 
       return res.status(200).json({
         success: true,
-        message: `Workout routine '${workoutTitle}' updated for ${day}.`,
-        workout
+        message: `Workout routine '${cleanTitle}' updated for ${day}.`,
+        workout: existingRoutine
       });
     }
 
-    workout = await Workout.create({
+    // Otherwise create a new routine session for this day (preserves any completed sessions)
+    const workout = await Workout.create({
       member: memberId,
       trainer: req.user._id,
       day,

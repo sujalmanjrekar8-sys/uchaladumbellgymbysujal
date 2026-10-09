@@ -187,11 +187,17 @@ async function loadTodayWorkout(dayOverride) {
         }
 
         // Set Live Status Badge
-        const allCompleted = todayList.every(w => w.isCompleted === true);
+        const completedCount = todayList.filter(w => w.isCompleted === true).length;
+        const totalCount = todayList.length;
+
         if (statusContainer) {
-            statusContainer.innerHTML = allCompleted
-                ? `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">Completed (Marked by Coach)</span>`
-                : `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today</span>`;
+            if (completedCount === totalCount) {
+                statusContainer.innerHTML = `<span class="badge-active" style="padding: 6px 14px; font-size: 13px;">All Routines Completed (${totalCount}/${totalCount})</span>`;
+            } else if (completedCount > 0) {
+                statusContainer.innerHTML = `<span class="badge-due" style="padding: 6px 14px; font-size: 13px; background: rgba(243, 156, 18, 0.15); color: #f39c12;">${completedCount} of ${totalCount} Routines Completed</span>`;
+            } else {
+                statusContainer.innerHTML = `<span class="badge-due" style="padding: 6px 14px; font-size: 13px;">Pending Today</span>`;
+            }
         }
 
         const formatReps = (r) => {
@@ -209,14 +215,25 @@ async function loadTodayWorkout(dayOverride) {
         let rowsHtml = '';
         todayList.forEach((w, idx) => {
             const rTitle = w.workoutTitle || w.title || w.category || `Routine #${idx + 1}`;
-            if (todayList.length > 1) {
-                rowsHtml += `<tr style="background: rgba(243, 156, 18, 0.08);"><td colspan="4" style="color: #f39c12; font-weight: bold; font-size: 13px;">📌 ${rTitle} (${w.isCompleted ? 'Completed' : 'Pending'})</td></tr>`;
-            }
+            const badge = w.isCompleted 
+                ? `<span class="badge-active" style="font-size: 11px; padding: 3px 8px; margin-left: 8px;">Completed</span>`
+                : `<span class="badge-due" style="font-size: 11px; padding: 3px 8px; margin-left: 8px;">Pending</span>`;
+            const noteText = w.notes && w.notes.trim() && w.notes.trim() !== '-' 
+                ? `<span style="font-size: 11px; color: #a0aec0; margin-left: 12px; font-style: italic;">Coach Note: ${w.notes}</span>` 
+                : '';
+
+            rowsHtml += `
+                <tr style="background: rgba(243, 156, 18, 0.1); border-top: 2px solid #1f2536;">
+                    <td colspan="4" style="color: #f39c12; font-weight: bold; font-size: 13px; padding: 10px 14px;">
+                        📌 ${rTitle} ${badge} ${noteText}
+                    </td>
+                </tr>
+            `;
 
             if (w.exercises && Array.isArray(w.exercises) && w.exercises.length > 0) {
                 rowsHtml += w.exercises.map(e => `
                     <tr>
-                        <td><strong style="color:#f39c12;">${e.name}</strong></td>
+                        <td style="padding-left: 24px;"><strong style="color:#ffffff;">${e.name}</strong></td>
                         <td>${formatSets(e.sets)}</td>
                         <td>${formatReps(e.reps)}</td>
                         <td>${e.weight ? `${e.weight}` : '-'}</td>
@@ -225,7 +242,7 @@ async function loadTodayWorkout(dayOverride) {
             } else if (w.exercise) {
                 rowsHtml += `
                     <tr>
-                        <td><strong style="color:#f39c12;">${w.exercise}</strong></td>
+                        <td style="padding-left: 24px;"><strong style="color:#ffffff;">${w.exercise}</strong></td>
                         <td>${formatSets(w.sets)}</td>
                         <td>${formatReps(w.reps || w.setsReps)}</td>
                         <td>${w.weight ? `${w.weight}` : '-'}</td>
