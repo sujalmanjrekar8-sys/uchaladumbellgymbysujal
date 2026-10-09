@@ -147,6 +147,9 @@ body.dashboard-body {
     border-radius: 8px;
     padding: 20px;
     overflow-x: auto;
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+    position: relative;
 }
 
 table {
@@ -155,12 +158,21 @@ table {
     font-size: 13px;
 }
 
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
 th {
     background-color: #181d2a;
     color: #f39c12;
     text-align: left;
     padding: 12px 14px;
     font-size: 12px;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 1px 0 #1f2536;
 }
 
 td {
@@ -353,10 +365,36 @@ tbody tr:hover {
     border: 1px solid #283046;
     border-radius: 8px;
     padding: 26px;
-    width: 100%;
-    max-width: 550px;
+    width: 95%;
+    max-width: 640px;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.modal-card form {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0d13;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #232d42;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #f39c12;
 }
 
 .modal-header {
@@ -385,15 +423,26 @@ tbody tr:hover {
     margin-bottom: 14px;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    min-width: 0;
 }
 
 .form-row {
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    width: 100%;
 }
 
 .form-row .form-group {
     flex: 1;
+    min-width: 0;
+}
+
+.form-row input,
+.form-row select {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group label {
@@ -405,6 +454,9 @@ tbody tr:hover {
 
 .form-group input,
 .form-group select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 10px;
     background-color: #0b0d13;
     border: 1px solid #1f2536;
