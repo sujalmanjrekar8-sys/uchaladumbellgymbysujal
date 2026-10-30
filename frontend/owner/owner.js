@@ -801,6 +801,12 @@ const assignPlanModalForm = document.getElementById('assignPlanForm');
 if (assignPlanModalForm) {
     assignPlanModalForm.addEventListener('submit', async function (e) {
         e.preventDefault();
+        const submitBtn = assignPlanModalForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.innerText : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Processing...';
+        }
         try {
             const paidEl = document.getElementById('assignPlanPaidAmount');
             const modeEl = document.getElementById('assignPlanPaymentMode');
@@ -814,7 +820,14 @@ if (assignPlanModalForm) {
             await customAlert(res.message || 'Plan activated and invoice generated!', 'Plan Assigned', 'success');
             closeModal('assignPlanModal');
             loadAllData();
-        } catch (err) { customAlert(err.message, 'Error', 'error'); }
+        } catch (err) { 
+            customAlert(err.message, 'Error', 'error'); 
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        }
     });
 }
 
@@ -890,6 +903,12 @@ const directPlanForm = document.getElementById('assignPlanDirectForm');
 if (directPlanForm) {
     directPlanForm.addEventListener('submit', async function (e) {
         e.preventDefault();
+        const submitBtn = directPlanForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.innerText : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Activating Plan...';
+        }
         try {
             const paidInput = document.getElementById('directPlanPaidAmount');
             const modeInput = document.getElementById('directPlanPaymentMode');
@@ -902,7 +921,14 @@ if (directPlanForm) {
             });
             await customAlert(res.message || 'Membership plan activated successfully!', 'Membership Plan Assigned', 'success');
             loadAllData();
-        } catch (err) { customAlert(err.message, 'Error', 'error'); }
+        } catch (err) { 
+            customAlert(err.message, 'Error', 'error'); 
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        }
     });
 }
 

@@ -22,6 +22,20 @@ const generateNextGymId = async (prefix, role) => {
   return `${prefix}-${nextNumber}`;
 };
 
+// Helper: Auto-generate unique Invoice Number based on Member ID, Date & Time
+// Format: INV-101030102026184512
+const generateInvoiceNumber = (gymId) => {
+  const now = new Date();
+  const memberCode = gymId ? String(gymId).replace(/\D/g, '') : '1000';
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `INV-${memberCode}${day}${month}${year}${hours}${minutes}${seconds}`;
+};
+
 // 1. DASHBOARD STATS
 const getDashboardStats = async (req, res) => {
   try {
@@ -115,8 +129,7 @@ const createMember = async (req, res) => {
 
     // If a plan was chosen during registration, record invoice/payment
     if (selectedPlan) {
-      const invoiceCount = await Payment.countDocuments();
-      const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
+      const invoiceNumber = generateInvoiceNumber(gymId);
       const totalAmount = Number(selectedPlan.price) || 0;
       const amountPaid = Number(paidAmount) || 0;
       const dueAmount = Math.max(0, totalAmount - amountPaid);
@@ -316,8 +329,7 @@ const assignPlanToMember = async (req, res) => {
     const status = dueAmount === 0 ? 'Paid' : (amountPaid > 0 ? 'Partial' : 'Pending');
 
     // Create a single clean invoice for this assigned plan
-    const invoiceCount = await Payment.countDocuments();
-    const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
+    const invoiceNumber = generateInvoiceNumber(member.gymId);
     await Payment.create({
       invoiceNumber,
       member: member._id,
@@ -470,8 +482,8 @@ const recordPayment = async (req, res) => {
   try {
     const { memberId, planId, totalAmount, paidAmount, paymentMode, notes } = req.body;
 
-    const invoiceCount = await Payment.countDocuments();
-    const invoiceNumber = `INV-UDG-${1001 + invoiceCount}`;
+    const member = await User.findById(memberId).select('gymId');
+    const invoiceNumber = generateInvoiceNumber(member ? member.gymId : null);
     const dueAmount = Math.max(0, Number(totalAmount) - Number(paidAmount));
     const status = dueAmount === 0 ? 'Paid' : (paidAmount > 0 ? 'Partial' : 'Pending');
 
