@@ -970,6 +970,12 @@ function onSalTrainerChange() {
 
 document.getElementById('salaryVoucherForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerText : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Issuing Voucher...';
+    }
     try {
         await api.post('/owner/salaries', {
             trainerId: document.getElementById('salTrainerSelect').value,
@@ -982,7 +988,14 @@ document.getElementById('salaryVoucherForm').addEventListener('submit', async fu
         closeModal('salaryVoucherModal');
         this.reset();
         loadAllData();
-    } catch (err) { customAlert(err.message, 'Error', 'error'); }
+    } catch (err) { 
+        customAlert(err.message, 'Error', 'error'); 
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        }
+    }
 });
 
 // Reset Password

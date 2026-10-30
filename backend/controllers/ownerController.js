@@ -36,6 +36,20 @@ const generateInvoiceNumber = (gymId) => {
   return `INV-${memberCode}${day}${month}${year}${hours}${minutes}${seconds}`;
 };
 
+// Helper: Auto-generate unique Salary Voucher Number based on Trainer ID, Date & Time
+// Format: SAL-100330102026193315
+const generateVoucherNumber = (gymId) => {
+  const now = new Date();
+  const trainerCode = gymId ? String(gymId).replace(/\D/g, '') : '1000';
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `SAL-${trainerCode}${day}${month}${year}${hours}${minutes}${seconds}`;
+};
+
 // 1. DASHBOARD STATS
 const getDashboardStats = async (req, res) => {
   try {
@@ -528,8 +542,8 @@ const createSalarySlip = async (req, res) => {
     const deduct = Number(deductions) || 0;
     const netSalary = base + bonus - deduct;
 
-    const salaryCount = await Salary.countDocuments();
-    const receiptNumber = `SAL-UDG-${1001 + salaryCount}`;
+    const trainer = await User.findById(trainerId).select('gymId');
+    const receiptNumber = generateVoucherNumber(trainer ? trainer.gymId : null);
 
     const salary = await Salary.create({
       trainer: trainerId,
