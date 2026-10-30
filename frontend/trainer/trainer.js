@@ -285,7 +285,7 @@ async function loadTraineeAttendance() {
                 <tr>
                     <td><strong>${gymId}</strong></td>
                     <td>${traineeName}</td>
-                    <td>${a.inTime || new Date(a.date).toLocaleDateString()}</td>
+                    <td>${a.inTime || a.time || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '-')}</td>
                     <td><span class="${statusClass}">${a.status}</span></td>
                     <td>
                         <button class="btn-action-edit" onclick="openEditTraineeAttendanceModal('${a._id}', '${safeName}', '${a.status}', '${safeNotes}')">Edit</button>
@@ -335,13 +335,17 @@ async function loadMyAttendance() {
             return;
         }
 
-        tbody.innerHTML = history.map(h => `
+        tbody.innerHTML = history.map(h => {
+            const timeStr = h.inTime || h.time || (h.createdAt ? new Date(h.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '-');
+            const statusClass = h.status === 'Present' ? 'badge-active' : 'badge-due';
+            return `
             <tr>
                 <td>${h.date ? new Date(h.date).toLocaleDateString() : '-'}</td>
-                <td>${h.inTime || 'Present'}</td>
-                <td><span class="${h.status === 'Present' ? 'badge-active' : 'badge-due'}">${h.status}</span></td>
+                <td>${timeStr}</td>
+                <td><span class="${statusClass}">${h.status}</span></td>
             </tr>
-        `).join("");
+            `;
+        }).join("");
     } catch (err) {
         console.error("My attendance error:", err);
     }

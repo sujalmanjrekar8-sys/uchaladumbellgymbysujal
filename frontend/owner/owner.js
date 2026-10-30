@@ -378,7 +378,7 @@ async function loadAttendance() {
                 <tr>
                     <td><strong>${a.user ? (a.user.gymId || a.user.customId) : '-'}</strong></td>
                     <td>${a.user ? a.user.name : 'Athlete'}</td>
-                    <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
+                    <td>${a.time || a.inTime || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '-')}</td>
                     <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
                     <td><button onclick="openEditAttendanceModal('${a._id}', '${a.user ? a.user.name : ''}', '${a.status}')" class="btn-action-edit">Edit</button>
                     <button onclick="deleteAttendanceRecord('${a._id}')" class="btn-action-delete">Delete</button></td>
@@ -394,7 +394,7 @@ async function loadAttendance() {
                 <tr>
                     <td><strong>${a.user ? (a.user.gymId || a.user.customId) : '-'}</strong></td>
                     <td>${a.user ? a.user.name : 'Coach'}</td>
-                    <td>${a.time || a.inTime || new Date(a.date).toLocaleDateString()}</td>
+                    <td>${a.time || a.inTime || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '-')}</td>
                     <td><span class="${a.status === 'Present' ? 'badge-active' : 'badge-due'}">${a.status}</span></td>
                     <td>
                     <button onclick="openEditAttendanceModal('${a._id}', '${a.user ? a.user.name : ''}', '${a.status}')" class="btn-action-edit">Edit</button>
